@@ -3,8 +3,7 @@ package com.yoger.productserviceorganization.product.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.yoger.productserviceorganization.LocalStackS3Config;
-import com.yoger.productserviceorganization.proruct.config.AwsProperties;
-import com.yoger.productserviceorganization.proruct.domain.S3Service;
+import com.yoger.productserviceorganization.product.config.AwsProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

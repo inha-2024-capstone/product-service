@@ -3,12 +3,12 @@ package com.yoger.productserviceorganization.product.domain;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 
-import com.yoger.productserviceorganization.proruct.domain.ProductService;
-import com.yoger.productserviceorganization.proruct.domain.model.PriceByQuantity;
-import com.yoger.productserviceorganization.proruct.domain.model.ProductState;
-import com.yoger.productserviceorganization.proruct.dto.response.SellableProductResponseDTO;
-import com.yoger.productserviceorganization.proruct.persistence.ProductEntity;
-import com.yoger.productserviceorganization.proruct.persistence.ProductRepository;
+import com.yoger.productserviceorganization.product.domain.model.PriceByQuantity;
+import com.yoger.productserviceorganization.product.domain.model.Product;
+import com.yoger.productserviceorganization.product.domain.model.ProductState;
+import com.yoger.productserviceorganization.product.dto.response.SimpleSellableProductResponseDTO;
+import com.yoger.productserviceorganization.product.persistence.ProductRepository;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,30 +30,42 @@ public class ProductServiceTests {
     @BeforeEach
     void setUp() {
         priceByQuantities = List.of(
-                new PriceByQuantity(100, 10000)
-                , new PriceByQuantity(1000, 8500)
-                , new PriceByQuantity(10000, 7500)
+                new PriceByQuantity(100, 10000),
+                new PriceByQuantity(1000, 8500),
+                new PriceByQuantity(10000, 7500)
         );
     }
 
     @Test
     void viewSellableProducts_ReturnsSellableProducts() {
-        ProductEntity sellableProduct = ProductEntity.of(
+        // Given
+        Product sellableProductDomain = Product.of(
+                null,
                 "유효한 상품",
                 priceByQuantities,
                 "상품에 대한 설명입니다.",
                 "https://my-bucket.s3.us-west-1.amazonaws.com/myimage.jpg",
-                ProductState.SELLABLE
+                ProductState.SELLABLE,
+                "https://my-bucket.s3.us-west-1.amazonaws.com/my-thumbnail.jpg",
+                1L, // creatorId
+                "제작자 이름", // creatorName
+                LocalDateTime.now().plusDays(30), // dueDate
+                100, // initialStockQuantity
+                20 // stockQuantity (80 판매됨)
         );
-        given(productRepository.findByState(ProductState.SELLABLE)).willReturn(List.of(sellableProduct));
+        given(productRepository.findByState(ProductState.SELLABLE)).willReturn(List.of(sellableProductDomain));
 
         // When
-        List<SellableProductResponseDTO> result = productService.viewSellableProducts();
+        List<SimpleSellableProductResponseDTO> result = productService.findSimpleSellableProducts();
 
         // Then
         assertThat(result).hasSize(1);
+        assertThat(result.get(0).id()).isEqualTo(sellableProductDomain.getId());
         assertThat(result.get(0).name()).isEqualTo("유효한 상품");
-        assertThat(result.get(0).state()).isEqualTo(ProductState.SELLABLE);
         assertThat(result.get(0).priceByQuantities()).isEqualTo(priceByQuantities);
+        assertThat(result.get(0).state()).isEqualTo(ProductState.SELLABLE);
+        assertThat(result.get(0).creatorName()).isEqualTo("제작자 이름");
+        assertThat(result.get(0).dueDate()).isEqualTo(sellableProductDomain.getDueDate());
     }
 }
+
