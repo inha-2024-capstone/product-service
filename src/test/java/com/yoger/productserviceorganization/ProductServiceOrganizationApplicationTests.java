@@ -3,9 +3,10 @@ package com.yoger.productserviceorganization;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
+import com.yoger.productserviceorganization.config.LocalStackS3Config;
 import com.yoger.productserviceorganization.product.adapters.web.dto.response.DemoProductResponseDTO;
 import com.yoger.productserviceorganization.product.adapters.web.dto.response.SimpleDemoProductResponseDTO;
-import com.yoger.productserviceorganization.product.config.AwsProperties;
+import com.yoger.productserviceorganization.product.config.AwsProductProperties;
 import com.yoger.productserviceorganization.product.domain.model.ProductState;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
@@ -18,7 +19,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 
@@ -37,15 +40,20 @@ class ProductServiceOrganizationApplicationTests {
     @Autowired
     private S3Client s3TestClient;
 
-    @Autowired
-    private AwsProperties awsProperties;
-
     private TestApplicationUtil applicationUtil;
+
+    @Autowired
+    private AwsProductProperties awsProductProperties;
+
+    private static final GenericContainer<?> redisContainer =
+            new GenericContainer<>(DockerImageName.parse("redis:7-alpine"))
+                    .withExposedPorts(6379);
 
     @BeforeAll
     public void setUp() {
         // 버킷을 미리 생성
-        s3TestClient.createBucket(CreateBucketRequest.builder().bucket(awsProperties.bucket()).build());
+        redisContainer.start();
+        s3TestClient.createBucket(CreateBucketRequest.builder().bucket(awsProductProperties.bucket()).build());
         this.applicationUtil = new TestApplicationUtil(webTestClient);
     }
 
@@ -60,8 +68,8 @@ class ProductServiceOrganizationApplicationTests {
         // Then
         String expectedImageUrlPattern = String.format(
                 "https://%s\\.s3\\.%s\\.amazonaws\\.com/[a-f0-9\\-]+_test-image\\.jpeg",
-                awsProperties.bucket(),
-                awsProperties.region()
+                awsProductProperties.bucket(),
+                awsProductProperties.region()
         );
 
         // 이미지 URL에 대한 별도 검증
@@ -139,8 +147,8 @@ class ProductServiceOrganizationApplicationTests {
         // Then
         String expectedImageUrlPattern = String.format(
                 "https://%s\\.s3\\.%s\\.amazonaws\\.com/[a-f0-9\\-]+_updated-image\\.jpeg",
-                awsProperties.bucket(),
-                awsProperties.region()
+                awsProductProperties.bucket(),
+                awsProductProperties.region()
         );
 
         assertThat(originDemoProductResponseDTO.name()).isEqualTo(updatedDemoProductResponseDTO.name());

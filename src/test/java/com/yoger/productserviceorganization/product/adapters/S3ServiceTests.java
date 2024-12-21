@@ -3,9 +3,9 @@ package com.yoger.productserviceorganization.product.adapters;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.yoger.productserviceorganization.LocalStackS3Config;
-import com.yoger.productserviceorganization.product.adapters.s3.S3ImageStorageService;
-import com.yoger.productserviceorganization.product.config.AwsProperties;
+import com.yoger.productserviceorganization.config.LocalStackS3Config;
+import com.yoger.productserviceorganization.product.adapters.s3.S3ProductProductImageStorage;
+import com.yoger.productserviceorganization.product.config.AwsProductProperties;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -34,19 +34,20 @@ public class S3ServiceTests {
     @Autowired
     private S3Client s3TestClient;
 
-    @Autowired
-    private AwsProperties awsProperties;
-
-    private S3ImageStorageService s3Service;
     private static final String TEST_IMAGE_NAME = "test-image.jpeg";
     private static final String TEST_IMAGE_PATH = "test-image.jpeg";
     private static final String EXPECTED_URL_PATTERN = "https://test-bucket\\.s3\\.ap-northeast-2\\.amazonaws\\.com/[a-f0-9\\-]+_test-image\\.jpeg";
 
+    @Autowired
+    private S3ProductProductImageStorage s3ProductImageStorage;
+
+    @Autowired
+    private AwsProductProperties awsProductProperties;
+
     @BeforeAll
     void setUp() {
-        s3Service = new S3ImageStorageService(s3TestClient, awsProperties);
         // 버킷을 미리 생성
-        s3TestClient.createBucket(CreateBucketRequest.builder().bucket(awsProperties.bucket()).build());
+        s3TestClient.createBucket(CreateBucketRequest.builder().bucket(awsProductProperties.bucket()).build());
     }
 
     @Test
@@ -62,7 +63,7 @@ public class S3ServiceTests {
         );
 
         // 이미지 업로드 테스트
-        String imageUrl = s3Service.uploadImage(mockFile);
+        String imageUrl = s3ProductImageStorage.uploadImage(mockFile);
 
         // URL 패턴 검증
         assertThat(imageUrl).matches(EXPECTED_URL_PATTERN);
@@ -72,7 +73,7 @@ public class S3ServiceTests {
 
         // S3에 업로드한 파일이 실제로 있는지 확인
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                .bucket(awsProperties.bucket())
+                .bucket(awsProductProperties.bucket())
                 .key(key)
                 .build();
 
@@ -98,7 +99,7 @@ public class S3ServiceTests {
                 imageBytes
         );
 
-        String imageUrl = s3Service.uploadImage(mockFile);
+        String imageUrl = s3ProductImageStorage.uploadImage(mockFile);
 
         // URL 패턴 검증
         assertThat(imageUrl).matches(EXPECTED_URL_PATTERN);
@@ -108,7 +109,7 @@ public class S3ServiceTests {
 
         // 2. 이미지가 S3에 존재하는지 확인
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                .bucket(awsProperties.bucket())
+                .bucket(awsProductProperties.bucket())
                 .key(key)
                 .build();
 
@@ -121,7 +122,7 @@ public class S3ServiceTests {
         assertThat(uploadedImageBytes).isEqualTo(imageBytes);
 
         // 3. 이미지 삭제
-        s3Service.deleteImage(imageUrl);
+        s3ProductImageStorage.deleteImage(imageUrl);
 
         // 4. 이미지가 S3에서 삭제되었는지 확인
         assertThatThrownBy(() -> s3TestClient.getObject(getObjectRequest))
@@ -133,7 +134,7 @@ public class S3ServiceTests {
     void testDeleteImageWithInvalidUrl() {
         String invalidUrl = "https://invalid-bucket.s3.ap-northeast-2.amazonaws.com/nonexistent-image.jpeg";
 
-        assertThatThrownBy(() -> s3Service.deleteImage(invalidUrl))
+        assertThatThrownBy(() -> s3ProductImageStorage.deleteImage(invalidUrl))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("잘못된 이미지 URL입니다: " + invalidUrl);
     }
@@ -141,9 +142,9 @@ public class S3ServiceTests {
     @Test
     void testDeleteNonExistingImage() {
         String nonExistingImageUrl = String.format("https://%s.s3.%s.amazonaws.com/nonexistent-image.jpeg",
-                awsProperties.bucket(), awsProperties.region());
+                awsProductProperties.bucket(), awsProductProperties.region());
 
-        assertThatThrownBy(() -> s3Service.deleteImage(nonExistingImageUrl))
+        assertThatThrownBy(() -> s3ProductImageStorage.deleteImage(nonExistingImageUrl))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("S3에서 파일 삭제 중 오류 발생");
     }
