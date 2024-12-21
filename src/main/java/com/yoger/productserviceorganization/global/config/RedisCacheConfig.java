@@ -1,11 +1,8 @@
-package com.yoger.productserviceorganization.product.config;
+package com.yoger.productserviceorganization.global.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,20 +16,20 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 @EnableCaching
-@ConfigurationProperties(prefix = "spring.data.redis")
-@Getter @Setter
 public class RedisCacheConfig {
-    private String host;
-    private Integer port;
-    private String password;
+    private final RedisCacheProperties redisCacheProperties;
+
+    public RedisCacheConfig(RedisCacheProperties redisCacheProperties) {
+        this.redisCacheProperties = redisCacheProperties;
+    }
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
-        config.setHostName(host);
-        config.setPort(port);
-        if (password != null && !password.isEmpty()) {
-            config.setPassword(RedisPassword.of(password));
+        config.setHostName(redisCacheProperties.host());
+        config.setPort(redisCacheProperties.port());
+        if (redisCacheProperties.password() != null && !redisCacheProperties.password().isEmpty()) {
+            config.setPassword(RedisPassword.of(redisCacheProperties.password()));
         }
 
         return new LettuceConnectionFactory(config);
