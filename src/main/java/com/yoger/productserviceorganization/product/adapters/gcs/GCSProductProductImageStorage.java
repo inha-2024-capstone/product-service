@@ -6,8 +6,8 @@ import com.google.cloud.storage.Acl.User;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
-import com.yoger.productserviceorganization.product.config.GcpProperties;
-import com.yoger.productserviceorganization.product.domain.port.ImageStorageService;
+import com.yoger.productserviceorganization.product.config.GcpProductProperties;
+import com.yoger.productserviceorganization.product.domain.port.ProductImageStorage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,14 +20,14 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @RequiredArgsConstructor
 @Profile("gcp")
-public class GCSImageStorageService implements ImageStorageService {
+public class GCSProductProductImageStorage implements ProductImageStorage {
     private final Storage storage;
-    private final GcpProperties gcpProperties;
+    private final GcpProductProperties gcpProductProperties;
 
     @Override
     public String uploadImage(MultipartFile image) {
         String fileName = UUID.randomUUID() + "_" + image.getOriginalFilename();
-        BlobId blobId = BlobId.of(gcpProperties.bucket(), fileName);
+        BlobId blobId = BlobId.of(gcpProductProperties.bucket(), fileName);
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
                 .setContentType(image.getContentType())
                 .setAcl(generatePublicAcl())
@@ -35,7 +35,7 @@ public class GCSImageStorageService implements ImageStorageService {
 
         try {
             storage.create(blobInfo, image.getBytes());
-            return String.format("https://storage.googleapis.com/%s/%s", gcpProperties.bucket(), fileName);
+            return String.format("https://storage.googleapis.com/%s/%s", gcpProductProperties.bucket(), fileName);
         } catch (IOException e) {
             throw new RuntimeException("GCS에 파일 업로드 중 오류 발생: " + e.getMessage(), e);
         } catch (Exception e) {
@@ -45,7 +45,7 @@ public class GCSImageStorageService implements ImageStorageService {
 
     @Override
     public void deleteImage(String imageUrl) {
-        String bucket = gcpProperties.bucket();
+        String bucket = gcpProductProperties.bucket();
         String prefix = String.format("https://storage.googleapis.com/%s/", bucket);
 
         if (!imageUrl.startsWith(prefix)) {

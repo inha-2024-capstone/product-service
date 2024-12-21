@@ -2,7 +2,7 @@ package com.yoger.productserviceorganization.product.adapters.persistence.jpa;
 
 import static org.assertj.core.api.Assertions.*;
 
-import com.yoger.productserviceorganization.product.config.DataConfig;
+import com.yoger.productserviceorganization.global.config.DataConfig;
 import com.yoger.productserviceorganization.product.domain.model.PriceByQuantity;
 import com.yoger.productserviceorganization.product.domain.model.ProductState;
 import jakarta.validation.ConstraintViolationException;

@@ -1,7 +1,7 @@
 package com.yoger.productserviceorganization.product.adapters.s3;
 
-import com.yoger.productserviceorganization.product.config.AwsProperties;
-import com.yoger.productserviceorganization.product.domain.port.ImageStorageService;
+import com.yoger.productserviceorganization.product.config.AwsProductProperties;
+import com.yoger.productserviceorganization.product.domain.port.ProductImageStorage;
 import java.io.IOException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -19,24 +19,24 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 @Service
 @RequiredArgsConstructor
 @Profile("aws")
-public class S3ImageStorageService implements ImageStorageService {
-    private final S3Client s3Client;
-    private final AwsProperties awsProperties;
+public class S3ProductProductImageStorage implements ProductImageStorage {
+    private final S3Client s3ProductClient;
+    private final AwsProductProperties awsProductProperties;
 
     @Override
     public String uploadImage(MultipartFile image) {
         String fileName = UUID.randomUUID() + "_" + image.getOriginalFilename();
         try {
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                    .bucket(awsProperties.bucket())
+                    .bucket(awsProductProperties.bucket())
                     .key(fileName)
                     .contentType(image.getContentType())
                     .contentLength(image.getSize())
                     .build();
 
-            s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(image.getInputStream(), image.getSize()));
+            s3ProductClient.putObject(putObjectRequest, RequestBody.fromInputStream(image.getInputStream(), image.getSize()));
 
-            return String.format("https://%s.s3.%s.amazonaws.com/%s", awsProperties.bucket(), awsProperties.region(), fileName);
+            return String.format("https://%s.s3.%s.amazonaws.com/%s", awsProductProperties.bucket(), awsProductProperties.region(), fileName);
         } catch (S3Exception e) {
             throw new RuntimeException("S3에 파일 업로드 중 오류 발생: " + e.getMessage(), e);
         } catch (IOException e) {
@@ -47,8 +47,8 @@ public class S3ImageStorageService implements ImageStorageService {
     @Override
     public void deleteImage(String imageUrl) {
         // S3 버킷 이름과 리전을 기반으로 URL에서 키를 추출
-        String bucket = awsProperties.bucket();
-        String region = awsProperties.region();
+        String bucket = awsProductProperties.bucket();
+        String region = awsProductProperties.region();
         String prefix = String.format("https://%s.s3.%s.amazonaws.com/", bucket, region);
 
         if (!imageUrl.startsWith(prefix)) {
@@ -63,7 +63,7 @@ public class S3ImageStorageService implements ImageStorageService {
                     .bucket(bucket)
                     .key(key)
                     .build();
-            HeadObjectResponse headObjectResponse = s3Client.headObject(headObjectRequest);
+            HeadObjectResponse headObjectResponse = s3ProductClient.headObject(headObjectRequest);
 
             // 객체가 존재하면 삭제
             if (headObjectResponse != null) {
@@ -71,7 +71,7 @@ public class S3ImageStorageService implements ImageStorageService {
                         .bucket(bucket)
                         .key(key)
                         .build();
-                s3Client.deleteObject(deleteObjectRequest);
+                s3ProductClient.deleteObject(deleteObjectRequest);
             } else {
                 throw new RuntimeException("파일이 존재하지 않습니다: " + imageUrl);
             }

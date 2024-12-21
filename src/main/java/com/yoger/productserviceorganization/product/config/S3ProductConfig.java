@@ -1,6 +1,5 @@
-package com.yoger.productserviceorganization.product.adapters.s3;
+package com.yoger.productserviceorganization.product.config;
 
-import com.yoger.productserviceorganization.product.config.AwsProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -11,19 +10,19 @@ import software.amazon.awssdk.services.s3.S3Client;
 
 @Configuration
 @Profile("!integration & aws")  // 테스트 환경에서 제외
-public class S3Config {
-    private final AwsProperties awsProperties;
+public class S3ProductConfig {
+    private final AwsProductProperties awsProductProperties;
 
-    public S3Config(AwsProperties awsProperties) {
-        this.awsProperties = awsProperties;
+    public S3ProductConfig(AwsProductProperties awsProductProperties) {
+        this.awsProductProperties = awsProductProperties;
     }
 
     @Bean
-    public S3Client s3Client() {
+    public S3Client s3ProductClient() {
         AwsBasicCredentials awsCredentials = AwsBasicCredentials
-                .create(awsProperties.accessKey(), awsProperties.secretKey());
+                .create(awsProductProperties.accessKey(), awsProductProperties.secretKey());
         return S3Client.builder()
-                .region(Region.of(awsProperties.region()))
+                .region(Region.of(awsProductProperties.region()))
                 .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
                 .build();
     }
