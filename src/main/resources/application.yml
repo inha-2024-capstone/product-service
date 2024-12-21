@@ -32,10 +32,11 @@ spring:
 cloud:
   aws:
     s3:
-      region: ap-northeast-2
-      bucket: yoger-product-test
-      access-key: ${S3_ACCESS_KEY}
-      secret-key: ${S3_SECRET_KEY}
+      product:
+        bucket: yoger-product-test
+        region: ap-northeast-2
+        access-key: ${S3_ACCESS_KEY}
+        secret-key: ${S3_SECRET_KEY}
 #  gcp:
 #    gcs:
 #      project-id: rich-sunlight-434701-c1

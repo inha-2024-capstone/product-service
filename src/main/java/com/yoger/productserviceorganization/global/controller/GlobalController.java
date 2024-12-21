@@ -1,4 +1,4 @@
-package com.yoger.productserviceorganization.controller;
+package com.yoger.productserviceorganization.global.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

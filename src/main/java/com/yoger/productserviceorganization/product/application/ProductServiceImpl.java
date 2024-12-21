@@ -11,7 +11,7 @@ import com.yoger.productserviceorganization.product.domain.exception.InvalidStoc
 import com.yoger.productserviceorganization.product.domain.model.PriceByQuantity;
 import com.yoger.productserviceorganization.product.domain.model.Product;
 import com.yoger.productserviceorganization.product.domain.model.ProductState;
-import com.yoger.productserviceorganization.product.domain.port.ImageStorageService;
+import com.yoger.productserviceorganization.product.domain.port.ProductImageStorage;
 import com.yoger.productserviceorganization.product.domain.port.ProductRepository;
 import com.yoger.productserviceorganization.product.mapper.ProductMapper;
 import jakarta.validation.Valid;
@@ -28,7 +28,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 @Transactional(readOnly = true)
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
-    private final ImageStorageService imageStorageService;
+    private final ProductImageStorage productImageStorage;
 
     public List<SimpleSellableProductResponseDTO> findSimpleSellableProducts() {
         return productRepository.findByState(ProductState.SELLABLE).stream()
@@ -42,8 +42,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Transactional
     public DemoProductResponseDTO saveDemoProduct(Long creatorId, @Valid DemoProductRequestDTO demoProductRequestDTO) {
-        String imageUrl = imageStorageService.uploadImage(demoProductRequestDTO.image());
-        String thumbnailImageUrl = imageStorageService.uploadImage(demoProductRequestDTO.thumbnailImage());
+        String imageUrl = productImageStorage.uploadImage(demoProductRequestDTO.image());
+        String thumbnailImageUrl = productImageStorage.uploadImage(demoProductRequestDTO.thumbnailImage());
 
         registerTransactionSynchronizationForImageDeletion(imageUrl, thumbnailImageUrl);
 
@@ -64,7 +64,7 @@ public class ProductServiceImpl implements ProductService {
 
     private void deleteUploadedImages(String... imageUrls) {
         for (String imageUrl : imageUrls) {
-            imageStorageService.deleteImage(imageUrl);
+            productImageStorage.deleteImage(imageUrl);
         }
     }
 
@@ -112,11 +112,11 @@ public class ProductServiceImpl implements ProductService {
         if (updatedDemoProductRequestDTO.description() != null) {
             updatedProductDescription = updatedDemoProductRequestDTO.description();
         }
-        String updatedImageUrl = imageStorageService.updateImage(
+        String updatedImageUrl = productImageStorage.updateImage(
                 updatedDemoProductRequestDTO.image(),
                 product.getImageUrl()
         );
-        String updatedThumbnailImageUrl = imageStorageService.updateImage(
+        String updatedThumbnailImageUrl = productImageStorage.updateImage(
                 updatedDemoProductRequestDTO.thumbnailImage(),
                 product.getThumbnailImageUrl()
         );
@@ -148,8 +148,8 @@ public class ProductServiceImpl implements ProductService {
         product.validateUnexpectedState(ProductState.DEMO);
         product.validateCreatorId(creatorId);
 
-        imageStorageService.deleteImage(product.getImageUrl());
-        imageStorageService.deleteImage(product.getThumbnailImageUrl());
+        productImageStorage.deleteImage(product.getImageUrl());
+        productImageStorage.deleteImage(product.getThumbnailImageUrl());
         productRepository.deleteById(productId);
     }
 

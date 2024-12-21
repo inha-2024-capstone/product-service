@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Profile;
 
 @Profile("gcp")
 @ConfigurationProperties(prefix = "cloud.gcp.gcs")
-public record GcpProperties(
+public record GcpProductProperties(
         String projectId,
         String bucket,
         String credentialsPath
