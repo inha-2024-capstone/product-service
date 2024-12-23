@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.yoger.productserviceorganization.config.LocalStackS3Config;
-import com.yoger.productserviceorganization.product.adapters.s3.S3ProductProductImageStorage;
+import com.yoger.productserviceorganization.product.adapters.s3.S3ProductImageStorage;
 import com.yoger.productserviceorganization.product.config.AwsProductProperties;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -39,7 +39,7 @@ public class S3ServiceTests {
     private static final String EXPECTED_URL_PATTERN = "https://test-bucket\\.s3\\.ap-northeast-2\\.amazonaws\\.com/[a-f0-9\\-]+_test-image\\.jpeg";
 
     @Autowired
-    private S3ProductProductImageStorage s3ProductImageStorage;
+    private S3ProductImageStorage s3ProductImageStorage;
 
     @Autowired
     private AwsProductProperties awsProductProperties;
