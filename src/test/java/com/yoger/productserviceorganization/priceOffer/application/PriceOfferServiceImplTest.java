@@ -13,7 +13,7 @@ import com.yoger.productserviceorganization.priceOffer.domain.exception.PriceOff
 import com.yoger.productserviceorganization.priceOffer.domain.exception.PriceOfferNotAllowedCreateOrUpdateException;
 import com.yoger.productserviceorganization.priceOffer.domain.model.PriceOffer;
 import com.yoger.productserviceorganization.priceOffer.domain.model.PriceOfferState;
-import com.yoger.productserviceorganization.priceOffer.domain.port.PriceOfferRepository;
+import com.yoger.productserviceorganization.priceOffer.application.port.PriceOfferRepository;
 import com.yoger.productserviceorganization.priceOffer.mapper.PriceOfferMapper;
 import com.yoger.productserviceorganization.product.application.ProductService;
 import com.yoger.productserviceorganization.product.domain.model.PriceByQuantity;

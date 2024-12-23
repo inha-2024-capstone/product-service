@@ -7,7 +7,7 @@ import com.yoger.productserviceorganization.priceOffer.domain.exception.PriceOff
 import com.yoger.productserviceorganization.priceOffer.domain.exception.PriceOfferNotAllowedCreateOrUpdateException;
 import com.yoger.productserviceorganization.priceOffer.domain.exception.PriceOfferNotFoundException;
 import com.yoger.productserviceorganization.priceOffer.domain.model.PriceOffer;
-import com.yoger.productserviceorganization.priceOffer.domain.port.PriceOfferRepository;
+import com.yoger.productserviceorganization.priceOffer.application.port.PriceOfferRepository;
 import com.yoger.productserviceorganization.priceOffer.mapper.PriceOfferMapper;
 import com.yoger.productserviceorganization.product.application.ProductService;
 import lombok.RequiredArgsConstructor;

@@ -6,7 +6,7 @@ import com.yoger.productserviceorganization.product.adapters.web.dto.response.pa
 import com.yoger.productserviceorganization.product.adapters.web.dto.response.partialRefundRequestDTOs;
 import com.yoger.productserviceorganization.product.domain.model.Product;
 import com.yoger.productserviceorganization.product.domain.model.ProductState;
-import com.yoger.productserviceorganization.product.domain.port.ProductRepository;
+import com.yoger.productserviceorganization.product.application.port.ProductRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
