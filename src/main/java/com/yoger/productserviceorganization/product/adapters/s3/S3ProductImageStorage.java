@@ -19,7 +19,7 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 @Service
 @RequiredArgsConstructor
 @Profile("aws")
-public class S3ProductProductImageStorage implements ProductImageStorage {
+public class S3ProductImageStorage implements ProductImageStorage {
     private final S3Client s3ProductClient;
     private final AwsProductProperties awsProductProperties;
 

@@ -20,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @RequiredArgsConstructor
 @Profile("gcp")
-public class GCSProductProductImageStorage implements ProductImageStorage {
+public class GCSProductImageStorage implements ProductImageStorage {
     private final Storage storage;
     private final GcpProductProperties gcpProductProperties;
 
