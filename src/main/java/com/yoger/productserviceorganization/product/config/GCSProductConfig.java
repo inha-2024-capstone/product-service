@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ClassPathResource;
 
 @Configuration
-@Profile({"!integration & gcp"})  // Exclude from integration tests
+@Profile("gcp")
 public class GCSProductConfig {
     private final GcpProductProperties gcpProductProperties;
 

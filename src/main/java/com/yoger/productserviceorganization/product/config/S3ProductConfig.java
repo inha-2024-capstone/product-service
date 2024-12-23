@@ -9,7 +9,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
 @Configuration
-@Profile("!integration & aws")  // 테스트 환경에서 제외
+@Profile("aws")
 public class S3ProductConfig {
     private final AwsProductProperties awsProductProperties;
 
