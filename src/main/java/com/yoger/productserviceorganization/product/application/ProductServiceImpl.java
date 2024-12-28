@@ -8,6 +8,7 @@ import com.yoger.productserviceorganization.product.adapters.web.dto.response.pa
 import com.yoger.productserviceorganization.product.adapters.web.dto.response.SellableProductResponseDTO;
 import com.yoger.productserviceorganization.product.adapters.web.dto.response.SimpleDemoProductResponseDTO;
 import com.yoger.productserviceorganization.product.adapters.web.dto.response.SimpleSellableProductResponseDTO;
+import com.yoger.productserviceorganization.product.domain.exception.InvalidProductException;
 import com.yoger.productserviceorganization.product.domain.exception.InvalidStockException;
 import com.yoger.productserviceorganization.product.domain.model.PriceByQuantity;
 import com.yoger.productserviceorganization.product.domain.model.Product;
@@ -142,16 +143,22 @@ public class ProductServiceImpl implements ProductService {
         productRepository.updateForState(sellableProduct, ProductState.DEMO);
     }
 
-
+    @Override
     @Transactional
     public void deleteDemoProduct(Long productId, Long creatorId) {
+        deleteProductWithState(productId, creatorId, ProductState.DEMO);
+    }
+
+    private void deleteProductWithState(Long productId, Long creatorId, ProductState state) {
+        if(state.equals(ProductState.SELLABLE)) {
+            throw new InvalidProductException("판매중인 상품은 삭제할 수 없습니다.");
+        }
         Product product = productRepository.findByIdWithLock(productId);
-        product.validateUnexpectedState(ProductState.DEMO);
+        product.validateUnexpectedState(state);
         product.validateCreatorId(creatorId);
 
-        productImageStorage.deleteImage(product.getImageUrl());
-        productImageStorage.deleteImage(product.getThumbnailImageUrl());
         productRepository.deleteById(productId);
+        deleteUploadedImages(product.getImageUrl(), product.getThumbnailImageUrl());
     }
 
     @Transactional
