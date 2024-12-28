@@ -33,7 +33,7 @@ public interface ProductService {
 
     void changeSellableProductStock(Long productId, Integer quantity);
 
-    List<?> findSimpleDemoProductsByCreatorId(Long creatorId);
+    List<?> findSimpleProductsByCreatorId(Long creatorId);
 
     partialRefundRequestDTO updateSellableToSaleEnded(Long productId, Integer soldAmount);
 }

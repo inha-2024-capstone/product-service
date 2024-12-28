@@ -3,6 +3,7 @@ package com.yoger.productserviceorganization.product.application;
 import com.yoger.productserviceorganization.product.adapters.web.dto.request.DemoProductRequestDTO;
 import com.yoger.productserviceorganization.product.adapters.web.dto.request.UpdatedDemoProductRequestDTO;
 import com.yoger.productserviceorganization.product.adapters.web.dto.response.DemoProductResponseDTO;
+import com.yoger.productserviceorganization.product.adapters.web.dto.response.SimpleSaleEndedProductResponseDTO;
 import com.yoger.productserviceorganization.product.adapters.web.dto.response.partialRefundRequestDTO;
 import com.yoger.productserviceorganization.product.adapters.web.dto.response.SellableProductResponseDTO;
 import com.yoger.productserviceorganization.product.adapters.web.dto.response.SimpleDemoProductResponseDTO;
@@ -162,14 +163,16 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<?> findSimpleDemoProductsByCreatorId(Long creatorId) {
+    public List<?> findSimpleProductsByCreatorId(Long creatorId) {
         return productRepository.findByCreatorId(creatorId)
                 .stream()
                 .map(product -> {
                     if (product.getState().equals(ProductState.SELLABLE)) {
                         return SimpleSellableProductResponseDTO.from(product);
-                    } else {
+                    } else if(product.getState().equals(ProductState.DEMO)) {
                         return SimpleDemoProductResponseDTO.from(product);
+                    } else {
+                        return SimpleSaleEndedProductResponseDTO.from(product);
                     }
                 })
                 .toList();
