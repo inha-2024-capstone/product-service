@@ -1,6 +1,6 @@
 package com.yoger.productserviceorganization.config;
 
-import com.yoger.productserviceorganization.product.adapters.s3.S3ProductProductImageStorage;
+import com.yoger.productserviceorganization.product.adapters.s3.S3ProductImageStorage;
 import com.yoger.productserviceorganization.product.config.AwsProductProperties;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -39,8 +39,8 @@ public class LocalStackS3Config {
     }
 
     @Bean
-    public S3ProductProductImageStorage s3ProductImageStorage(S3Client s3TestClient) {
-        return new S3ProductProductImageStorage(s3TestClient, awsProductProperties());
+    public S3ProductImageStorage s3ProductImageStorage(S3Client s3TestClient) {
+        return new S3ProductImageStorage(s3TestClient, awsProductProperties());
     }
 
     @Bean

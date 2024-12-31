@@ -1,4 +1,4 @@
-package com.yoger.productserviceorganization.product.config;
+package com.yoger.productserviceorganization.review.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,20 +9,20 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
 @Configuration
-@Profile("aws")
-public class S3ProductConfig {
-    private final AwsProductProperties awsProductProperties;
+@Profile("!integration & aws")
+public class S3ReviewConfig {
+    private final AwsReviewProperties awsReviewProperties;
 
-    public S3ProductConfig(AwsProductProperties awsProductProperties) {
-        this.awsProductProperties = awsProductProperties;
+    public S3ReviewConfig(AwsReviewProperties awsReviewProperties) {
+        this.awsReviewProperties = awsReviewProperties;
     }
 
     @Bean
-    public S3Client s3ProductClient() {
+    public S3Client s3ReviewClient() {
         AwsBasicCredentials awsCredentials = AwsBasicCredentials
-                .create(awsProductProperties.accessKey(), awsProductProperties.secretKey());
+                .create(awsReviewProperties.accessKey(), awsReviewProperties.secretKey());
         return S3Client.builder()
-                .region(Region.of(awsProductProperties.region()))
+                .region(Region.of(awsReviewProperties.region()))
                 .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
                 .build();
     }

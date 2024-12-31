@@ -7,7 +7,7 @@ import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.yoger.productserviceorganization.product.config.GcpProductProperties;
-import com.yoger.productserviceorganization.product.domain.port.ProductImageStorage;
+import com.yoger.productserviceorganization.product.application.port.ProductImageStorage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @RequiredArgsConstructor
 @Profile("gcp")
-public class GCSProductProductImageStorage implements ProductImageStorage {
+public class GCSProductImageStorage implements ProductImageStorage {
     private final Storage storage;
     private final GcpProductProperties gcpProductProperties;
 

@@ -1,4 +1,4 @@
-package com.yoger.productserviceorganization.priceOffer.domain.port;
+package com.yoger.productserviceorganization.priceOffer.application.port;
 
 import com.yoger.productserviceorganization.priceOffer.domain.model.PriceOffer;
 import java.util.List;

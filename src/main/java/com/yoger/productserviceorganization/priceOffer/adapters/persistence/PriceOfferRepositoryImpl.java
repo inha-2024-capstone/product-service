@@ -3,13 +3,12 @@ package com.yoger.productserviceorganization.priceOffer.adapters.persistence;
 import com.yoger.productserviceorganization.priceOffer.adapters.persistence.jpa.JpaPriceOfferRepository;
 import com.yoger.productserviceorganization.priceOffer.adapters.persistence.jpa.PriceOfferId;
 import com.yoger.productserviceorganization.priceOffer.domain.model.PriceOffer;
-import com.yoger.productserviceorganization.priceOffer.domain.port.PriceOfferRepository;
+import com.yoger.productserviceorganization.priceOffer.application.port.PriceOfferRepository;
 import com.yoger.productserviceorganization.priceOffer.mapper.PriceOfferMapper;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @RequiredArgsConstructor

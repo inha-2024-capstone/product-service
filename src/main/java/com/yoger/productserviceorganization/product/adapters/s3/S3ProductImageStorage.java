@@ -1,7 +1,7 @@
 package com.yoger.productserviceorganization.product.adapters.s3;
 
 import com.yoger.productserviceorganization.product.config.AwsProductProperties;
-import com.yoger.productserviceorganization.product.domain.port.ProductImageStorage;
+import com.yoger.productserviceorganization.product.application.port.ProductImageStorage;
 import java.io.IOException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 @Service
 @RequiredArgsConstructor
 @Profile("aws")
-public class S3ProductProductImageStorage implements ProductImageStorage {
+public class S3ProductImageStorage implements ProductImageStorage {
     private final S3Client s3ProductClient;
     private final AwsProductProperties awsProductProperties;
 
