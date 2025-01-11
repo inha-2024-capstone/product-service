@@ -1,16 +1,19 @@
 spring:
-  profiles:
-    active: aws
   application:
     name: product-services
+  profiles:
+    active: aws
   datasource:
     url: jdbc:mysql://${DB_URL}:3306/${DB_NAME}?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
-  #    hikari:
-  #      connection-timeout: 2000 #ms
-  #      maximum-pool-size: 50
+    hikari:
+      connection-timeout: 2000 # ms
+      maximum-pool-size: 50
+      minimum-idle: 10
+      idle-timeout: 30000 # ms
+      max-lifetime: 1800000 # ms
   jpa:
     hibernate:
       ddl-auto: update
@@ -28,12 +31,56 @@ spring:
   threads:
     virtual:
       enabled: true
+  kafka:
+    producer:
+      bootstrap-servers: kafka.confluent.svc.cluster.local:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        enable-idempotence: true
+        acks: all
+        max-in-flight-requests-per-connection: 1
+        # 트랜잭셔널 아이디 설정
+        # transactional-id: "product-service-tx-id-123"
+        # 그 외 필요한 재시도 설정
+        retries: 5
+        delivery-timeout-ms: 120000
+    consumer:
+      bootstrap-servers: kafka.confluent.svc.cluster.local:9092
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      group-id: product-service-group
+      enable-auto-commit: false   # 수동 커밋 -> 트랜잭션적 커밋을 위해
+      properties:
+        # (1) read_committed : 트랜잭션 메시지 커밋된 것만 읽는다
+        isolation-level: read_committed
+        # 배치 크기
+        max-poll-records: 500
+        # 브로커 응답 지연(최대 50ms)
+        fetch-max-wait-ms: 50
+        # 브로커가 적어도 이만큼 데이터가 쌓이면 보내도록
+        # 1이면 "1바이트 이상" 즉, 거의 즉시
+        fetch-min-bytes: 1
+
+event:
+  topic:
+    product:
+      deductionCompleted: yoger.product.prd.deductionCompleted
+      deductionFailed: yoger.product.prd.deductionFailed
+    order:
+      created: yoger.order.prd.created
+      canceled: yoger.order.prd.canceled
 
 cloud:
   aws:
     s3:
       product:
         bucket: yoger-product-test
+        region: ap-northeast-2
+        access-key: ${S3_ACCESS_KEY}
+        secret-key: ${S3_SECRET_KEY}
+      review:
+        bucket: yoger-review-test
         region: ap-northeast-2
         access-key: ${S3_ACCESS_KEY}
         secret-key: ${S3_SECRET_KEY}
