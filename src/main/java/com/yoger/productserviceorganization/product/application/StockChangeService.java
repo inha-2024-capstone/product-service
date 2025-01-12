@@ -3,7 +3,7 @@ package com.yoger.productserviceorganization.product.application;
 import com.yoger.productserviceorganization.product.adapters.messaging.kafka.producer.EventProducer;
 import com.yoger.productserviceorganization.product.adapters.messaging.kafka.producer.event.DeductionCompletedEvent;
 import com.yoger.productserviceorganization.product.adapters.messaging.kafka.producer.event.DeductionFailedEvent;
-import com.yoger.productserviceorganization.product.application.port.ProductRepository;
+import com.yoger.productserviceorganization.product.application.port.out.ProductRepository;
 import com.yoger.productserviceorganization.product.application.port.in.DeductStockCommand;
 import com.yoger.productserviceorganization.product.application.port.in.DeductStockCommands;
 import com.yoger.productserviceorganization.product.application.port.in.DeductStockOnOrderCreatedUseCase;

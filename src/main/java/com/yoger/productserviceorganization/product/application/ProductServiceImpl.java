@@ -13,8 +13,8 @@ import com.yoger.productserviceorganization.product.domain.exception.InvalidStoc
 import com.yoger.productserviceorganization.product.domain.model.PriceByQuantity;
 import com.yoger.productserviceorganization.product.domain.model.Product;
 import com.yoger.productserviceorganization.product.domain.model.ProductState;
-import com.yoger.productserviceorganization.product.application.port.ProductImageStorage;
-import com.yoger.productserviceorganization.product.application.port.ProductRepository;
+import com.yoger.productserviceorganization.product.application.port.out.ProductImageStorage;
+import com.yoger.productserviceorganization.product.application.port.out.ProductRepository;
 import com.yoger.productserviceorganization.product.mapper.ProductMapper;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;

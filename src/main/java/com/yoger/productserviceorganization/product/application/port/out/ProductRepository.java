@@ -1,4 +1,4 @@
-package com.yoger.productserviceorganization.product.application.port;
+package com.yoger.productserviceorganization.product.application.port.out;
 
 import com.yoger.productserviceorganization.product.domain.model.Product;
 import com.yoger.productserviceorganization.product.domain.model.ProductState;

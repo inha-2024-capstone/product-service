@@ -1,7 +1,7 @@
 package com.yoger.productserviceorganization.review.adapter.s3;
 
 import com.yoger.productserviceorganization.review.config.AwsReviewProperties;
-import com.yoger.productserviceorganization.review.application.port.ReviewImageStorage;
+import com.yoger.productserviceorganization.review.application.port.out.ReviewImageStorage;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;

@@ -1,4 +1,4 @@
-package com.yoger.productserviceorganization.product.application.port;
+package com.yoger.productserviceorganization.product.application.port.out;
 
 import org.springframework.web.multipart.MultipartFile;
 
