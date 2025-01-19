@@ -148,5 +148,4 @@ public class S3ServiceTests {
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("S3에서 파일 삭제 중 오류 발생");
     }
-
 }
