@@ -1,5 +1,5 @@
 package com.yoger.productserviceorganization.product.application.port.in;
 
-public interface DeductStockOnOrderCreatedUseCase {
+public interface DeductStockUseCase {
     void deductStock(DeductStockCommands deductStockCommands);
 }
