@@ -18,7 +18,6 @@ import org.springframework.stereotype.Repository;
 public class ProductRepositoryImpl implements ProductRepository {
     private static final String PRODUCT_ENTITY_CACHE = "productEntity : ";
     private static final String PRODUCT_ENTITY_CACHE_BY_STATE = "productEntitiesByState : ";
-    private static final String PRODUCT_ENTITY_STOCK = "productEntityStock : ";
 
     private final JpaProductRepository jpaProductRepository;
     private final RedisTemplate<String, Object> redisTemplate;
