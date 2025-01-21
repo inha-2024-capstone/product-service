@@ -171,9 +171,14 @@ public class Product {
         );
     }
 
-    public void changeStockQuantity(Integer amount) {
+    public void deductStockQuantity(Integer quantity) {
         validateUnexpectedState(ProductState.SELLABLE);
-        this.stock.change(amount);
+        this.stock.change(-quantity);
+    }
+
+    public void increaseStockQuantity(Integer quantity) {
+        validateUnexpectedState(ProductState.SELLABLE);
+        this.stock.change(quantity);
     }
 
     public int getStockQuantity() {
