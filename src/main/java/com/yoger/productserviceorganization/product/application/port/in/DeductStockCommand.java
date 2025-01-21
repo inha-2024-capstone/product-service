@@ -3,15 +3,13 @@ package com.yoger.productserviceorganization.product.application.port.in;
 import java.time.LocalDateTime;
 
 public record DeductStockCommand(
-        Long orderId,
-        Integer orderQuantity,
+        Integer quantity,
         LocalDateTime occurrenceDateTime
 ) {
     public static DeductStockCommand of(
-            Long orderId,
-            Integer orderQuantity,
+            Integer quantity,
             LocalDateTime occurrenceDateTime
     ) {
-        return new DeductStockCommand(orderId, orderQuantity, occurrenceDateTime);
+        return new DeductStockCommand(quantity, occurrenceDateTime);
     }
 }
