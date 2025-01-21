@@ -17,6 +17,13 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+    properties:
+      hibernate:
+        order_inserts: true
+        order_updates: true
+        jdbc:
+          batch_size: 300
+    database: mysql
   servlet:
     multipart:
       max-file-size: 100MB
