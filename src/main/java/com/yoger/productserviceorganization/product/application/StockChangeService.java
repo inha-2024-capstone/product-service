@@ -1,46 +1,59 @@
 package com.yoger.productserviceorganization.product.application;
 
-import com.yoger.productserviceorganization.product.adapters.messaging.kafka.producer.EventProducer;
-import com.yoger.productserviceorganization.product.adapters.messaging.kafka.producer.event.DeductionCompletedEvent;
-import com.yoger.productserviceorganization.product.adapters.messaging.kafka.producer.event.DeductionFailedEvent;
+import com.yoger.productserviceorganization.product.adapters.persistence.jpa.OutboxEvent;
+import com.yoger.productserviceorganization.product.application.port.in.DeductStockCommandFromOrderEvent;
+import com.yoger.productserviceorganization.product.application.port.in.IncreaseStockCommand;
+import com.yoger.productserviceorganization.product.application.port.in.IncreaseStockUseCase;
+import com.yoger.productserviceorganization.product.application.port.out.OutboxRepository;
 import com.yoger.productserviceorganization.product.application.port.out.ProductRepository;
-import com.yoger.productserviceorganization.product.application.port.in.DeductStockCommand;
-import com.yoger.productserviceorganization.product.application.port.in.DeductStockCommands;
-import com.yoger.productserviceorganization.product.application.port.in.DeductStockOnOrderCreatedUseCase;
+import com.yoger.productserviceorganization.product.application.port.in.DeductStockCommandsFromOrderEvent;
+import com.yoger.productserviceorganization.product.application.port.in.DeductStockUseCase;
 import com.yoger.productserviceorganization.product.domain.model.Product;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Service
 @RequiredArgsConstructor
 @Transactional
-@Service
-@Slf4j
-public class StockChangeService implements DeductStockOnOrderCreatedUseCase {
+public class StockChangeService implements DeductStockUseCase, IncreaseStockUseCase {
     private final ProductRepository productRepository;
-    private final EventProducer eventProducer;
+    private final OutboxRepository outboxRepository;
+    private final OutboxEventFactory outboxEventFactory;
 
     @Override
-    public void deductStock(DeductStockCommands deductStockCommands) {
-        Long productId = deductStockCommands.productId();
-        Product product = productRepository.findById(productId);
+    public void deductStockFromOrderCreated(DeductStockCommandsFromOrderEvent commands) {
+        Long productId = commands.productId();
+        Product product = productRepository.findByIdWithLock(productId);
         int currentStockQuantity = product.getStockQuantity();
         int totalOrderQuantity = 0;
-        for(DeductStockCommand deductStockCommand : deductStockCommands.deductStockCommands()) {
-            // 이미 처리된 이벤트인가 검증로직이 추가되어야 함.
-            if (totalOrderQuantity + deductStockCommand.orderQuantity() <= currentStockQuantity) {
-                totalOrderQuantity += deductStockCommand.orderQuantity();
-                eventProducer.sendDeductionCompletedEvent(
-                        DeductionCompletedEvent.from(productId, deductStockCommand)
-                );
+        List<OutboxEvent> outboxEvents = new ArrayList<>();
+        for (DeductStockCommandFromOrderEvent deductStockCommandFromOrderEvent : commands.deductStockCommands()) {
+            Integer orderQuantity = deductStockCommandFromOrderEvent.deductStockCommand().quantity();
+            if (canDeduct(currentStockQuantity, totalOrderQuantity, orderQuantity)) {
+                totalOrderQuantity += orderQuantity;
+                outboxEvents.add(outboxEventFactory.createDeductionCompletedEvent(productId, deductStockCommandFromOrderEvent));
             } else {
-                eventProducer.sendDeductionFailedEvent(
-                        DeductionFailedEvent.from(productId, deductStockCommand)
-                );
+                outboxEvents.add(outboxEventFactory.createDeductionFailedEvent(productId, deductStockCommandFromOrderEvent));
             }
         }
-        product.changeStockQuantity(-totalOrderQuantity);
+        outboxRepository.saveAll(outboxEvents);
+
+        product.deductStockQuantity(totalOrderQuantity);
+        productRepository.save(product);
+    }
+
+    private boolean canDeduct(int currentStockQuantity, int totalOrderQuantity, int orderQuantity) {
+        return totalOrderQuantity + orderQuantity <= currentStockQuantity;
+    }
+
+    @Override
+    public void increaseStockFromOrderCanceled(IncreaseStockCommand command) {
+        Long productId = command.productId();
+        Product product = productRepository.findByIdWithLock(productId);
+        product.increaseStockQuantity(command.quantity());
         productRepository.save(product);
     }
 }
