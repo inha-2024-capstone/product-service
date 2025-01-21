@@ -25,7 +25,7 @@ public record DeductionCompletedEvent(
         return new DeductionCompletedEvent(
                 UUID.randomUUID().toString(),
                 productId,
-                "InventoryDeductionCompleted",
+                "deductionCompleted",
                 DeductionCompletedEventData.of(
                         deductStockCommand.orderId(),
                         deductStockCommand.orderQuantity()

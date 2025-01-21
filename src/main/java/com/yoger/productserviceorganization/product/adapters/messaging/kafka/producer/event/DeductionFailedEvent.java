@@ -25,7 +25,7 @@ public record DeductionFailedEvent(
         return new DeductionFailedEvent(
                 UUID.randomUUID().toString(),
                 productId,
-                "InventoryDeductionFailed",
+                "deductionFailed",
                 DeductionFailedEventData.of(
                         deductStockCommand.orderId(),
                         deductStockCommand.orderQuantity()
