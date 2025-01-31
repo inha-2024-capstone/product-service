@@ -1,4 +1,4 @@
-package com.yoger.productserviceorganization.review.application.port;
+package com.yoger.productserviceorganization.review.application.port.out;
 
 import com.yoger.productserviceorganization.review.domain.model.Review;
 import java.util.List;

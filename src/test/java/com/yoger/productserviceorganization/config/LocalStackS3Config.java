@@ -2,6 +2,8 @@ package com.yoger.productserviceorganization.config;
 
 import com.yoger.productserviceorganization.product.adapters.s3.S3ProductImageStorage;
 import com.yoger.productserviceorganization.product.config.AwsProductProperties;
+import com.yoger.productserviceorganization.review.adapter.s3.S3ReviewImageStorage;
+import com.yoger.productserviceorganization.review.config.AwsReviewProperties;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
@@ -16,9 +18,11 @@ import software.amazon.awssdk.services.s3.S3Client;
 @Profile("aws & integration")
 public class LocalStackS3Config {
     private final AwsProductTestProperties awsProductTestProperties;
+    private final AwsReviewTestProperties awsReviewTestProperties;
 
     public LocalStackS3Config() {
         this.awsProductTestProperties = new AwsProductTestProperties();
+        this.awsReviewTestProperties = new AwsReviewTestProperties();
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
@@ -44,12 +48,27 @@ public class LocalStackS3Config {
     }
 
     @Bean
+    public S3ReviewImageStorage s3ReviewImageStorage(S3Client s3TestClient) {
+        return new S3ReviewImageStorage(s3TestClient, awsReviewProperties());
+    }
+
+    @Bean
     public AwsProductProperties awsProductProperties() {
         return new AwsProductProperties(
                 awsProductTestProperties.getRegion(),
                 awsProductTestProperties.getBucket(),
                 awsProductTestProperties.getAccessKey(),
                 awsProductTestProperties.getSecretKey()
+        );
+    }
+
+    @Bean
+    public AwsReviewProperties awsReviewProperties() {
+        return new AwsReviewProperties(
+                awsReviewTestProperties.getRegion(),
+                awsReviewTestProperties.getBucket(),
+                awsReviewTestProperties.getAccessKey(),
+                awsReviewTestProperties.getSecretKey()
         );
     }
 }

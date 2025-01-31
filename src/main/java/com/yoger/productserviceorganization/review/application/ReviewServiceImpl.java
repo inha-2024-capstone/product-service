@@ -2,8 +2,8 @@ package com.yoger.productserviceorganization.review.application;
 
 import com.yoger.productserviceorganization.review.application.command.CreateReviewCommand;
 import com.yoger.productserviceorganization.review.domain.model.Review;
-import com.yoger.productserviceorganization.review.application.port.ReviewImageStorage;
-import com.yoger.productserviceorganization.review.application.port.ReviewRepository;
+import com.yoger.productserviceorganization.review.application.port.out.ReviewImageStorage;
+import com.yoger.productserviceorganization.review.application.port.out.ReviewRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

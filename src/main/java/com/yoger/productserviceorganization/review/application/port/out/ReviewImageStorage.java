@@ -1,4 +1,4 @@
-package com.yoger.productserviceorganization.review.application.port;
+package com.yoger.productserviceorganization.review.application.port.out;
 
 import java.util.List;
 import org.springframework.web.multipart.MultipartFile;

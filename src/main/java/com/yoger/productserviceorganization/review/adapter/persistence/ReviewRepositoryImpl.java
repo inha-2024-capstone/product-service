@@ -4,7 +4,7 @@ import com.yoger.productserviceorganization.review.adapter.persistence.jpa.JpaRe
 import com.yoger.productserviceorganization.review.adapter.persistence.jpa.ReviewEntity;
 import com.yoger.productserviceorganization.review.domain.exception.ReviewNotFoundException;
 import com.yoger.productserviceorganization.review.domain.model.Review;
-import com.yoger.productserviceorganization.review.application.port.ReviewRepository;
+import com.yoger.productserviceorganization.review.application.port.out.ReviewRepository;
 import com.yoger.productserviceorganization.review.mapper.ReviewMapper;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

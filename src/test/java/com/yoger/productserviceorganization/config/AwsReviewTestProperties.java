@@ -1,12 +1,12 @@
 package com.yoger.productserviceorganization.config;
 
-public class AwsProductTestProperties{
+public class AwsReviewTestProperties{
     private final String region;
     private final String bucket;
     private final String accessKey;
     private final String secretKey;
 
-    public AwsProductTestProperties() {
+    public AwsReviewTestProperties() {
         this.region = "ap-northeast-2";
         this.bucket = "test-bucket";
         this.accessKey = "test-access-key";

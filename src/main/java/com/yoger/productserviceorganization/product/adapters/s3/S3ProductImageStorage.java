@@ -1,7 +1,7 @@
 package com.yoger.productserviceorganization.product.adapters.s3;
 
 import com.yoger.productserviceorganization.product.config.AwsProductProperties;
-import com.yoger.productserviceorganization.product.application.port.ProductImageStorage;
+import com.yoger.productserviceorganization.product.application.port.out.ProductImageStorage;
 import java.io.IOException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
