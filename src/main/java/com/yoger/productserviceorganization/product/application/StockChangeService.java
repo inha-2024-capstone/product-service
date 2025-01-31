@@ -32,7 +32,7 @@ public class StockChangeService implements DeductStockUseCase, IncreaseStockUseC
         List<OutboxEvent> outboxEvents = new ArrayList<>();
         for (DeductStockCommandFromOrderEvent deductStockCommandFromOrderEvent : commands.deductStockCommands()) {
             Integer orderQuantity = deductStockCommandFromOrderEvent.deductStockCommand().quantity();
-            if (canDeduct(currentStockQuantity, totalOrderQuantity, orderQuantity)) {
+            if (isCanDeduct(currentStockQuantity, totalOrderQuantity, orderQuantity)) {
                 totalOrderQuantity += orderQuantity;
                 outboxEvents.add(outboxEventFactory.createDeductionCompletedEvent(productId, deductStockCommandFromOrderEvent));
             } else {
@@ -45,7 +45,7 @@ public class StockChangeService implements DeductStockUseCase, IncreaseStockUseC
         productRepository.save(product);
     }
 
-    private boolean canDeduct(int currentStockQuantity, int totalOrderQuantity, int orderQuantity) {
+    private boolean isCanDeduct(int currentStockQuantity, int totalOrderQuantity, int orderQuantity) {
         return totalOrderQuantity + orderQuantity <= currentStockQuantity;
     }
 
