@@ -16,10 +16,10 @@ public class CommonProductController {
     private final ProductService productService;
 
     @GetMapping("/creator")
-    public ResponseEntity<List<?>> getDemoProductsByCreator(
+    public ResponseEntity<List<?>> getSimpleProductInfosByCreator(
             @RequestHeader(value = "User-Id") Long creatorId
     ) {
-        List<?> demoProducts = productService.findSimpleDemoProductsByCreatorId(creatorId);
+        List<?> demoProducts = productService.findSimpleProductsByCreatorId(creatorId);
         return ResponseEntity.ok(demoProducts);
     }
 }

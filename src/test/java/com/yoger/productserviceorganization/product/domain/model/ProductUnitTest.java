@@ -85,19 +85,19 @@ public class ProductUnitTest {
 
     @Test
     void testDecreaseStockQuantitySuccess() {
-        product.changeStockQuantity(-10);
+        product.deductStockQuantity(10);
         assertThat(product.getStock().getStockQuantity()).isEqualTo(40);
     }
 
     @Test
     void testDecreaseStockQuantityWithInvalidAmount() {
-        assertThatThrownBy(() -> product.changeStockQuantity(0))
+        assertThatThrownBy(() -> product.deductStockQuantity(0))
                 .isInstanceOf(InvalidStockException.class);
     }
 
     @Test
     void testDecreaseStockQuantityWithExceedingAmount() {
-        assertThatThrownBy(() -> product.changeStockQuantity(-60))
+        assertThatThrownBy(() -> product.deductStockQuantity(60))
                 .isInstanceOf(InsufficientStockException.class);
     }
 

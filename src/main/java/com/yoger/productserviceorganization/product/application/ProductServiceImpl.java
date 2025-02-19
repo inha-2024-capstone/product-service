@@ -3,16 +3,18 @@ package com.yoger.productserviceorganization.product.application;
 import com.yoger.productserviceorganization.product.adapters.web.dto.request.DemoProductRequestDTO;
 import com.yoger.productserviceorganization.product.adapters.web.dto.request.UpdatedDemoProductRequestDTO;
 import com.yoger.productserviceorganization.product.adapters.web.dto.response.DemoProductResponseDTO;
+import com.yoger.productserviceorganization.product.adapters.web.dto.response.SimpleSaleEndedProductResponseDTO;
 import com.yoger.productserviceorganization.product.adapters.web.dto.response.partialRefundRequestDTO;
 import com.yoger.productserviceorganization.product.adapters.web.dto.response.SellableProductResponseDTO;
 import com.yoger.productserviceorganization.product.adapters.web.dto.response.SimpleDemoProductResponseDTO;
 import com.yoger.productserviceorganization.product.adapters.web.dto.response.SimpleSellableProductResponseDTO;
+import com.yoger.productserviceorganization.product.domain.exception.InvalidProductException;
 import com.yoger.productserviceorganization.product.domain.exception.InvalidStockException;
 import com.yoger.productserviceorganization.product.domain.model.PriceByQuantity;
 import com.yoger.productserviceorganization.product.domain.model.Product;
 import com.yoger.productserviceorganization.product.domain.model.ProductState;
-import com.yoger.productserviceorganization.product.domain.port.ImageStorageService;
-import com.yoger.productserviceorganization.product.domain.port.ProductRepository;
+import com.yoger.productserviceorganization.product.application.port.out.ProductImageStorage;
+import com.yoger.productserviceorganization.product.application.port.out.ProductRepository;
 import com.yoger.productserviceorganization.product.mapper.ProductMapper;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
@@ -28,7 +30,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 @Transactional(readOnly = true)
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
-    private final ImageStorageService imageStorageService;
+    private final ProductImageStorage productImageStorage;
 
     public List<SimpleSellableProductResponseDTO> findSimpleSellableProducts() {
         return productRepository.findByState(ProductState.SELLABLE).stream()
@@ -42,8 +44,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Transactional
     public DemoProductResponseDTO saveDemoProduct(Long creatorId, @Valid DemoProductRequestDTO demoProductRequestDTO) {
-        String imageUrl = imageStorageService.uploadImage(demoProductRequestDTO.image());
-        String thumbnailImageUrl = imageStorageService.uploadImage(demoProductRequestDTO.thumbnailImage());
+        String imageUrl = productImageStorage.uploadImage(demoProductRequestDTO.image());
+        String thumbnailImageUrl = productImageStorage.uploadImage(demoProductRequestDTO.thumbnailImage());
 
         registerTransactionSynchronizationForImageDeletion(imageUrl, thumbnailImageUrl);
 
@@ -64,7 +66,7 @@ public class ProductServiceImpl implements ProductService {
 
     private void deleteUploadedImages(String... imageUrls) {
         for (String imageUrl : imageUrls) {
-            imageStorageService.deleteImage(imageUrl);
+            productImageStorage.deleteImage(imageUrl);
         }
     }
 
@@ -112,11 +114,11 @@ public class ProductServiceImpl implements ProductService {
         if (updatedDemoProductRequestDTO.description() != null) {
             updatedProductDescription = updatedDemoProductRequestDTO.description();
         }
-        String updatedImageUrl = imageStorageService.updateImage(
+        String updatedImageUrl = productImageStorage.updateImage(
                 updatedDemoProductRequestDTO.image(),
                 product.getImageUrl()
         );
-        String updatedThumbnailImageUrl = imageStorageService.updateImage(
+        String updatedThumbnailImageUrl = productImageStorage.updateImage(
                 updatedDemoProductRequestDTO.thumbnailImage(),
                 product.getThumbnailImageUrl()
         );
@@ -141,16 +143,22 @@ public class ProductServiceImpl implements ProductService {
         productRepository.updateForState(sellableProduct, ProductState.DEMO);
     }
 
-
+    @Override
     @Transactional
     public void deleteDemoProduct(Long productId, Long creatorId) {
+        deleteProductWithState(productId, creatorId, ProductState.DEMO);
+    }
+
+    private void deleteProductWithState(Long productId, Long creatorId, ProductState state) {
+        if(state.equals(ProductState.SELLABLE)) {
+            throw new InvalidProductException("판매중인 상품은 삭제할 수 없습니다.");
+        }
         Product product = productRepository.findByIdWithLock(productId);
-        product.validateUnexpectedState(ProductState.DEMO);
+        product.validateUnexpectedState(state);
         product.validateCreatorId(creatorId);
 
-        imageStorageService.deleteImage(product.getImageUrl());
-        imageStorageService.deleteImage(product.getThumbnailImageUrl());
         productRepository.deleteById(productId);
+        deleteUploadedImages(product.getImageUrl(), product.getThumbnailImageUrl());
     }
 
     @Transactional
@@ -162,14 +170,16 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<?> findSimpleDemoProductsByCreatorId(Long creatorId) {
+    public List<?> findSimpleProductsByCreatorId(Long creatorId) {
         return productRepository.findByCreatorId(creatorId)
                 .stream()
                 .map(product -> {
                     if (product.getState().equals(ProductState.SELLABLE)) {
                         return SimpleSellableProductResponseDTO.from(product);
-                    } else {
+                    } else if(product.getState().equals(ProductState.DEMO)) {
                         return SimpleDemoProductResponseDTO.from(product);
+                    } else {
+                        return SimpleSaleEndedProductResponseDTO.from(product);
                     }
                 })
                 .toList();

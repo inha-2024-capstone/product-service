@@ -1,11 +1,16 @@
 spring:
   datasource:
-    url: jdbc:tc:mysql:8.0.39:///
-
-cloud:
-  aws:
-    s3:
-      region: ap-northeast-2
-      bucket: test-bucket
-      access-key: test-access-key
-      secret-key: test-secret-key
+    url: jdbc:tc:mysql:8.0.39:///testdb
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+    username: test
+    password: test
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+  data:
+    redis:
+      host: localhost  # 또는 docker-compose 시 서비스 이름
+      port: 6379
