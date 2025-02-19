@@ -23,29 +23,42 @@ public class StockChangeService implements DeductStockUseCase, IncreaseStockUseC
     private final OutboxRepository outboxRepository;
     private final OutboxEventFactory outboxEventFactory;
 
+    private record DeductionResult(int totalOrderQuantity, List<OutboxEvent> outboxEvents) {}
+
     @Override
     public void deductStockFromOrderCreated(DeductStockCommandsFromOrderEvent commands) {
         Long productId = commands.productId();
         Product product = productRepository.findByIdWithLock(productId);
         int currentStockQuantity = product.getStockQuantity();
-        int totalOrderQuantity = 0;
-        List<OutboxEvent> outboxEvents = new ArrayList<>();
-        for (DeductStockCommandFromOrderEvent deductStockCommandFromOrderEvent : commands.deductStockCommands()) {
-            Integer orderQuantity = deductStockCommandFromOrderEvent.deductStockCommand().quantity();
-            if (isCanDeduct(currentStockQuantity, totalOrderQuantity, orderQuantity)) {
-                totalOrderQuantity += orderQuantity;
-                outboxEvents.add(outboxEventFactory.createDeductionCompletedEvent(productId, deductStockCommandFromOrderEvent));
-            } else {
-                outboxEvents.add(outboxEventFactory.createDeductionFailedEvent(productId, deductStockCommandFromOrderEvent));
-            }
-        }
-        outboxRepository.saveAll(outboxEvents);
+        DeductionResult deductionResult = processDeductStockCommands(commands, productId, currentStockQuantity);
 
-        product.deductStockQuantity(totalOrderQuantity);
+        outboxRepository.saveAll(deductionResult.outboxEvents);
+
+        product.deductStockQuantity(deductionResult.totalOrderQuantity);
         productRepository.save(product);
     }
 
-    private boolean isCanDeduct(int currentStockQuantity, int totalOrderQuantity, int orderQuantity) {
+    private DeductionResult processDeductStockCommands(
+            DeductStockCommandsFromOrderEvent commands,
+            Long productId,
+            int currentStockQuantity
+    ) {
+        int totalOrderQuantity = 0;
+        List<OutboxEvent> outboxEvents = new ArrayList<>();
+
+        for (DeductStockCommandFromOrderEvent commandEvent : commands.deductStockCommands()) {
+            int orderQuantity = commandEvent.deductStockCommand().quantity();
+            if (canDeduct(currentStockQuantity, totalOrderQuantity, orderQuantity)) {
+                totalOrderQuantity += orderQuantity;
+                outboxEvents.add(outboxEventFactory.createDeductionCompletedEvent(productId, commandEvent));
+            } else {
+                outboxEvents.add(outboxEventFactory.createDeductionFailedEvent(productId, commandEvent));
+            }
+        }
+        return new DeductionResult(totalOrderQuantity, outboxEvents);
+    }
+
+    private boolean canDeduct(int currentStockQuantity, int totalOrderQuantity, int orderQuantity) {
         return totalOrderQuantity + orderQuantity <= currentStockQuantity;
     }
 
