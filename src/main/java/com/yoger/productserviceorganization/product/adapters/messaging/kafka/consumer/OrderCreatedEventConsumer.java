@@ -21,7 +21,7 @@ public class OrderCreatedEventConsumer {
     private final EventDeduplicateService eventDeduplicateService;
 
     @KafkaListener(
-            topics = "#{'${event.topic.order.created}'}",
+            topics = "${event.topic.order.created}",
             containerFactory = "kafkaOrderCreatedEventListenerContainerFactory"
     )
     public void consumeOrderCreatedEventBatch(List<OrderCreatedEvent> events, Acknowledgment acknowledgment) {
