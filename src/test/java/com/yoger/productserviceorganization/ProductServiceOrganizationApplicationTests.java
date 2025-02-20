@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
 import com.yoger.productserviceorganization.config.LocalStackS3Config;
+import com.yoger.productserviceorganization.config.RedisTestConfig;
 import com.yoger.productserviceorganization.product.adapters.web.dto.response.DemoProductResponseDTO;
 import com.yoger.productserviceorganization.product.adapters.web.dto.response.SimpleDemoProductResponseDTO;
 import com.yoger.productserviceorganization.product.config.AwsProductProperties;
@@ -19,15 +20,16 @@ import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        classes = LocalStackS3Config.class
+        classes = {
+                LocalStackS3Config.class,
+                RedisTestConfig.class
+        }
 )
 @ActiveProfiles({"integration", "aws"})
 @Testcontainers
@@ -45,14 +47,9 @@ class ProductServiceOrganizationApplicationTests {
     @Autowired
     private AwsProductProperties awsProductProperties;
 
-    private static final GenericContainer<?> redisContainer =
-            new GenericContainer<>(DockerImageName.parse("redis:7-alpine"))
-                    .withExposedPorts(6379);
-
     @BeforeAll
     public void setUp() {
         // 버킷을 미리 생성
-        redisContainer.start();
         s3TestClient.createBucket(CreateBucketRequest.builder().bucket(awsProductProperties.bucket()).build());
         this.applicationUtil = new TestApplicationUtil(webTestClient);
     }

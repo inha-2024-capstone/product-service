@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.yoger.productserviceorganization.config.LocalStackS3Config;
+import com.yoger.productserviceorganization.config.RedisTestConfig;
 import com.yoger.productserviceorganization.product.adapters.s3.S3ProductImageStorage;
 import com.yoger.productserviceorganization.product.config.AwsProductProperties;
 import org.junit.jupiter.api.BeforeAll;
@@ -25,7 +26,10 @@ import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 
 @SpringBootTest(
-        classes = LocalStackS3Config.class
+        classes = {
+                LocalStackS3Config.class,
+                RedisTestConfig.class
+        }
 )
 @ActiveProfiles({"integration", "aws"})
 @Testcontainers
