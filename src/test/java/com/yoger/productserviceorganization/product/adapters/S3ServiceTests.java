@@ -7,13 +7,16 @@ import com.yoger.productserviceorganization.config.LocalStackS3Config;
 import com.yoger.productserviceorganization.config.RedisTestConfig;
 import com.yoger.productserviceorganization.product.adapters.s3.S3ProductImageStorage;
 import com.yoger.productserviceorganization.product.config.AwsProductProperties;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.util.FileCopyUtils;
@@ -48,10 +51,22 @@ public class S3ServiceTests {
     @Autowired
     private AwsProductProperties awsProductProperties;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
     @BeforeAll
     void setUp() {
         // 버킷을 미리 생성
         s3TestClient.createBucket(CreateBucketRequest.builder().bucket(awsProductProperties.bucket()).build());
+    }
+
+    @AfterEach
+    void cleanUp() {
+        jdbcTemplate.execute("TRUNCATE TABLE product_entity");
+        redisTemplate.getConnectionFactory().getConnection().serverCommands().flushAll();
     }
 
     @Test
