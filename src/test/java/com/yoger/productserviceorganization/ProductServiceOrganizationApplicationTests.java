@@ -4,30 +4,35 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
 import com.yoger.productserviceorganization.config.LocalStackS3Config;
+import com.yoger.productserviceorganization.config.RedisTestConfig;
 import com.yoger.productserviceorganization.product.adapters.web.dto.response.DemoProductResponseDTO;
 import com.yoger.productserviceorganization.product.adapters.web.dto.response.SimpleDemoProductResponseDTO;
 import com.yoger.productserviceorganization.product.config.AwsProductProperties;
 import com.yoger.productserviceorganization.product.domain.model.ProductState;
 import java.util.List;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        classes = LocalStackS3Config.class
+        classes = {
+                LocalStackS3Config.class,
+                RedisTestConfig.class
+        }
 )
 @ActiveProfiles({"integration", "aws"})
 @Testcontainers
@@ -45,16 +50,24 @@ class ProductServiceOrganizationApplicationTests {
     @Autowired
     private AwsProductProperties awsProductProperties;
 
-    private static final GenericContainer<?> redisContainer =
-            new GenericContainer<>(DockerImageName.parse("redis:7-alpine"))
-                    .withExposedPorts(6379);
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
 
     @BeforeAll
     public void setUp() {
         // 버킷을 미리 생성
-        redisContainer.start();
         s3TestClient.createBucket(CreateBucketRequest.builder().bucket(awsProductProperties.bucket()).build());
         this.applicationUtil = new TestApplicationUtil(webTestClient);
+    }
+
+    @AfterEach
+    void cleanUp() {
+        jdbcTemplate.execute("TRUNCATE TABLE product_entity");
+        redisTemplate.getConnectionFactory().getConnection().serverCommands().flushAll();
     }
 
     @Test
