@@ -7,8 +7,10 @@ import com.yoger.productserviceorganization.product.application.port.in.DeductSt
 import com.yoger.productserviceorganization.product.application.port.in.DeductStockUseCase;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
@@ -42,7 +44,9 @@ public class OrderCreatedEventConsumer {
     }
 
     private List<OrderCreatedEvent> createDeduplicatedEvents(List<OrderCreatedEvent> events) {
+        Set<String> encounteredIds = new HashSet<>();
         return events.stream()
+                .filter(event -> encounteredIds.add(event.eventId()))
                 .filter(event -> !eventDeduplicateService.isDuplicate(event.eventId()))
                 .toList();
     }
