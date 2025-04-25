@@ -212,4 +212,8 @@ public class Product {
     public Boolean isDemo() {
         return this.state == ProductState.DEMO;
     }
+
+    public boolean canDeduct(int totalOrderQuantity, int orderQuantity) {
+        return totalOrderQuantity + orderQuantity <= getStockQuantity();
+    }
 }

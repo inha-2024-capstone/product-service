@@ -25,6 +25,6 @@ public class OrderCanceledEventConsumer {
                 event.data().orderQuantity(),
                 event.occurrenceDateTime()
         );
-        increaseStockUseCase.increaseStockFromOrderCanceled(increaseStockCommand);
+        increaseStockUseCase.applyIncrease(increaseStockCommand);
     }
 }

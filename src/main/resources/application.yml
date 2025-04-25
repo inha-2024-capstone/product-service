@@ -4,7 +4,7 @@ spring:
   profiles:
     active: aws
   datasource:
-    url: jdbc:mysql://${DB_URL}:3306/${DB_NAME}?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul
+    url: jdbc:mysql://${DB_URL}:3306/${DB_NAME}?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul&rewriteBatchedStatements=true
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
@@ -58,6 +58,7 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       group-id: product-service-group
       enable-auto-commit: false   # 수동 커밋 -> 트랜잭션적 커밋을 위해
+      auto-offset-reset: earliest
       properties:
         # (1) read_committed : 트랜잭션 메시지 커밋된 것만 읽는다
         isolation-level: read_committed
@@ -71,9 +72,6 @@ spring:
 
 event:
   topic:
-    product:
-      deductionCompleted: yoger.product.prd.deductionCompleted
-      deductionFailed: yoger.product.prd.deductionFailed
     order:
       created: yoger.order.prd.created
       canceled: yoger.order.prd.canceled
