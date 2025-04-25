@@ -6,10 +6,10 @@ public record OrderCreatedEvent(
         String eventId,
         Long orderId,
         String eventType,
-        OrderCreatedEventData data,
+        OrderCreatedData data,
         LocalDateTime occurrenceDateTime
 ) {
-    public record OrderCreatedEventData(
+    public record OrderCreatedData(
             Long userId,
             Long productId,
             Integer orderQuantity

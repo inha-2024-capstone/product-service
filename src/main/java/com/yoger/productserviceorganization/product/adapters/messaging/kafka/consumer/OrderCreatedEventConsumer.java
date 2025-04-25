@@ -19,8 +19,8 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class OrderCreatedEventConsumer {
-    private final DeductStockUseCase deductStockUseCase;
     private final EventDeduplicateService eventDeduplicateService;
+    private final DeductStockUseCase deductStockUseCase;
 
     @KafkaListener(
             topics = "${event.topic.order.created}",
@@ -32,7 +32,7 @@ public class OrderCreatedEventConsumer {
                 groupDeductStockCommandsByProductId(deduplicatedEvents);
         try {
             deductStockCommandMap.forEach(
-                    (productId, deductStockCommandList) -> deductStockUseCase.deductStockFromOrderCreated(
+                    (productId, deductStockCommandList) -> deductStockUseCase.applyDeduction(
                             DeductStockCommandsFromOrderEvent.of(productId, deductStockCommandList)
                     )
             );
