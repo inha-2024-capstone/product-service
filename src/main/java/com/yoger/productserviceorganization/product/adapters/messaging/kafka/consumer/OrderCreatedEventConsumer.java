@@ -2,8 +2,8 @@ package com.yoger.productserviceorganization.product.adapters.messaging.kafka.co
 
 import com.yoger.productserviceorganization.product.adapters.messaging.kafka.consumer.dedup.EventDeduplicateService;
 import com.yoger.productserviceorganization.product.adapters.messaging.kafka.consumer.event.OrderCreatedEvent;
-import com.yoger.productserviceorganization.product.application.port.in.DeductStockCommandFromOrderEvent;
-import com.yoger.productserviceorganization.product.application.port.in.DeductStockCommandsFromOrderEvent;
+import com.yoger.productserviceorganization.product.application.port.in.command.DeductStockCommandFromOrderEvent;
+import com.yoger.productserviceorganization.product.application.port.in.command.DeductStockCommandsFromOrderEvent;
 import com.yoger.productserviceorganization.product.application.port.in.DeductStockUseCase;
 import java.util.ArrayList;
 import java.util.HashMap;

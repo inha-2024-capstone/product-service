@@ -2,7 +2,7 @@ package com.yoger.productserviceorganization.product.adapters.messaging.kafka.co
 
 import com.yoger.productserviceorganization.product.adapters.messaging.kafka.consumer.dedup.EventDeduplicateService;
 import com.yoger.productserviceorganization.product.adapters.messaging.kafka.consumer.event.OrderCanceledEvent;
-import com.yoger.productserviceorganization.product.application.port.in.IncreaseStockCommand;
+import com.yoger.productserviceorganization.product.application.port.in.command.IncreaseStockCommand;
 import com.yoger.productserviceorganization.product.application.port.in.IncreaseStockUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;

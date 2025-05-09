@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class OutboxEvent {
+public class OutboxEventJpaEntity {
     @Id
     private String id;
 
@@ -27,13 +27,13 @@ public class OutboxEvent {
 
     private LocalDateTime created_at;
 
-    public static OutboxEvent of(
+    public static OutboxEventJpaEntity of(
             String id,
             String aggregateId,
             String eventType,
             String payload,
             LocalDateTime createdAt
     ) {
-        return new OutboxEvent(id, "product", aggregateId, eventType, payload, createdAt);
+        return new OutboxEventJpaEntity(id, "product", aggregateId, eventType, payload, createdAt);
     }
 }
