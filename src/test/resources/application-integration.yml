@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:tc:mysql:8.0.39:///testdb
+    url: jdbc:tc:mysql:8.0.39:///testdb?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul&rewriteBatchedStatements=true
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
     username: test
     password: test
@@ -10,6 +10,11 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
+        order_inserts: true
+        order_updates: true
+        jdbc:
+          batch_size: 300
+    database: mysql
   data:
     redis:
       host: localhost  # 또는 docker-compose 시 서비스 이름
