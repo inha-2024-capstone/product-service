@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yoger.productserviceorganization.product.adapters.messaging.kafka.producer.event.DeductionCompletedEvent;
 import com.yoger.productserviceorganization.product.adapters.messaging.kafka.producer.event.DeductionFailedEvent;
 import com.yoger.productserviceorganization.product.adapters.persistence.jpa.OutboxEvent;
-import com.yoger.productserviceorganization.product.application.port.in.DeductStockCommandFromOrderEvent;
+import com.yoger.productserviceorganization.product.application.port.in.command.DeductStockCommandFromOrderEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

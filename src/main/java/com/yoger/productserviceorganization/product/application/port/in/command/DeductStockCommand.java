@@ -1,4 +1,4 @@
-package com.yoger.productserviceorganization.product.application.port.in;
+package com.yoger.productserviceorganization.product.application.port.in.command;
 
 import java.time.LocalDateTime;
 

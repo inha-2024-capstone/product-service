@@ -1,12 +1,12 @@
 package com.yoger.productserviceorganization.product.application;
 
 import com.yoger.productserviceorganization.product.adapters.persistence.jpa.OutboxEvent;
-import com.yoger.productserviceorganization.product.application.port.in.DeductStockCommandFromOrderEvent;
-import com.yoger.productserviceorganization.product.application.port.in.IncreaseStockCommand;
+import com.yoger.productserviceorganization.product.application.port.in.command.DeductStockCommandFromOrderEvent;
+import com.yoger.productserviceorganization.product.application.port.in.command.IncreaseStockCommand;
 import com.yoger.productserviceorganization.product.application.port.in.IncreaseStockUseCase;
 import com.yoger.productserviceorganization.product.application.port.out.OutboxRepository;
 import com.yoger.productserviceorganization.product.application.port.out.ProductRepository;
-import com.yoger.productserviceorganization.product.application.port.in.DeductStockCommandsFromOrderEvent;
+import com.yoger.productserviceorganization.product.application.port.in.command.DeductStockCommandsFromOrderEvent;
 import com.yoger.productserviceorganization.product.application.port.in.DeductStockUseCase;
 import com.yoger.productserviceorganization.product.domain.model.Product;
 import java.util.ArrayList;

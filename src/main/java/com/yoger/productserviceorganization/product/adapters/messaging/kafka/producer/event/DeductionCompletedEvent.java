@@ -1,6 +1,6 @@
 package com.yoger.productserviceorganization.product.adapters.messaging.kafka.producer.event;
 
-import com.yoger.productserviceorganization.product.application.port.in.DeductStockCommandFromOrderEvent;
+import com.yoger.productserviceorganization.product.application.port.in.command.DeductStockCommandFromOrderEvent;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
