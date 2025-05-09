@@ -24,7 +24,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -58,9 +57,6 @@ public class KafkaIntegrationTests {
 
     @Autowired
     KafkaTemplate<String, Object> kafkaTemplate;
-
-    @Autowired
-    KafkaListenerEndpointRegistry registry;
 
     @Autowired
     DeductStockUseCase deductStockUseCase;

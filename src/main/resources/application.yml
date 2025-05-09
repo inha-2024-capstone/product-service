@@ -71,9 +71,6 @@ spring:
 
 event:
   topic:
-    product:
-      deductionCompleted: yoger.product.prd.deductionCompleted
-      deductionFailed: yoger.product.prd.deductionFailed
     order:
       created: yoger.order.prd.created
       canceled: yoger.order.prd.canceled
