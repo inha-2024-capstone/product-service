@@ -17,6 +17,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -31,7 +32,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductEntity {
+public class ProductJpaEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -47,7 +48,7 @@ public class ProductEntity {
     @Nullable
     @Type(JsonType.class)
     @Column(columnDefinition = "json")
-    private List<PriceByQuantity> priceByQuantities;
+    private List<PriceByQuantity> priceByQuantities = new ArrayList<>();
 
     @NotBlank(message = "상품에 대한 설명을 적어주세요.")
     @Size(min = 10, max = 500, message = "상품 상세 설명은 10글자 이상 500글자 이하만 가능합니다.")
@@ -95,7 +96,7 @@ public class ProductEntity {
      * Product의 경우에는 다수의 사용자가 동일한 상품을 수정하는 경우는
      * 존재하지 않기 때문에 작성하지 않음
      */
-    public static ProductEntity of(
+    public static ProductJpaEntity of(
             Long id,
             String name,
             List<PriceByQuantity> priceByQuantities,
@@ -109,7 +110,7 @@ public class ProductEntity {
             int initialStockQuantity,
             int stockQuantity
     ) {
-        return new ProductEntity(
+        return new ProductJpaEntity(
                 id,
                 name,
                 priceByQuantities,

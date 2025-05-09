@@ -1,6 +1,6 @@
 package com.yoger.productserviceorganization.config;
 
-import com.yoger.productserviceorganization.product.adapters.s3.S3ProductImageStorage;
+import com.yoger.productserviceorganization.product.adapters.s3.S3ManageProductImageAdapter;
 import com.yoger.productserviceorganization.product.config.AwsProductProperties;
 import com.yoger.productserviceorganization.review.adapter.s3.S3ReviewImageStorage;
 import com.yoger.productserviceorganization.review.config.AwsReviewProperties;
@@ -43,8 +43,8 @@ public class LocalStackS3Config {
     }
 
     @Bean
-    public S3ProductImageStorage s3ProductImageStorage(S3Client s3TestClient) {
-        return new S3ProductImageStorage(s3TestClient, awsProductProperties());
+    public S3ManageProductImageAdapter s3ManageProductImageAdapter(S3Client s3TestClient) {
+        return new S3ManageProductImageAdapter(s3TestClient, awsProductProperties());
     }
 
     @Bean
