@@ -1,11 +1,11 @@
-package com.yoger.productserviceorganization.product.application;
+package com.yoger.productserviceorganization.product.application.port.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yoger.productserviceorganization.product.adapters.messaging.kafka.producer.event.DeductionCompletedEvent;
 import com.yoger.productserviceorganization.product.adapters.messaging.kafka.producer.event.DeductionFailedEvent;
-import com.yoger.productserviceorganization.product.adapters.persistence.jpa.OutboxEvent;
 import com.yoger.productserviceorganization.product.application.port.in.command.DeductStockCommandFromOrderEvent;
+import com.yoger.productserviceorganization.product.domain.event.OutboxEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

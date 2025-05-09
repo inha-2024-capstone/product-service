@@ -1,13 +1,14 @@
-package com.yoger.productserviceorganization.product.application;
+package com.yoger.productserviceorganization.product.application.port.service;
 
-import com.yoger.productserviceorganization.product.adapters.persistence.jpa.OutboxEvent;
 import com.yoger.productserviceorganization.product.application.port.in.command.DeductStockCommandFromOrderEvent;
 import com.yoger.productserviceorganization.product.application.port.in.command.IncreaseStockCommand;
 import com.yoger.productserviceorganization.product.application.port.in.IncreaseStockUseCase;
-import com.yoger.productserviceorganization.product.application.port.out.OutboxRepository;
-import com.yoger.productserviceorganization.product.application.port.out.ProductRepository;
+import com.yoger.productserviceorganization.product.application.port.out.LoadProductPort;
+import com.yoger.productserviceorganization.product.application.port.out.PersistProductPort;
 import com.yoger.productserviceorganization.product.application.port.in.command.DeductStockCommandsFromOrderEvent;
 import com.yoger.productserviceorganization.product.application.port.in.DeductStockUseCase;
+import com.yoger.productserviceorganization.product.application.port.out.SaveOutboxEventPort;
+import com.yoger.productserviceorganization.product.domain.event.OutboxEvent;
 import com.yoger.productserviceorganization.product.domain.model.Product;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,8 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional
 public class StockChangeService implements DeductStockUseCase, IncreaseStockUseCase {
-    private final ProductRepository productRepository;
-    private final OutboxRepository outboxRepository;
+    private final LoadProductPort loadProductPort;
+    private final SaveOutboxEventPort saveOutboxEventPort;
+    private final PersistProductPort persistProductPort;
     private final OutboxEventFactory outboxEventFactory;
 
     private record DeductionResult(int totalOrderQuantity, List<OutboxEvent> outboxEvents) {}
@@ -28,14 +30,14 @@ public class StockChangeService implements DeductStockUseCase, IncreaseStockUseC
     @Override
     public void deductStockFromOrderCreated(DeductStockCommandsFromOrderEvent commands) {
         Long productId = commands.productId();
-        Product product = productRepository.findByIdWithLock(productId);
+        Product product = loadProductPort.loadProductWithLock(productId);
         int currentStockQuantity = product.getStockQuantity();
         DeductionResult deductionResult = processDeductStockCommands(commands, productId, currentStockQuantity);
 
-        outboxRepository.saveAll(deductionResult.outboxEvents);
+        saveOutboxEventPort.saveAll(deductionResult.outboxEvents);
 
         product.deductStockQuantity(deductionResult.totalOrderQuantity);
-        productRepository.save(product);
+        persistProductPort.persist(product);
     }
 
     private DeductionResult processDeductStockCommands(
@@ -65,8 +67,8 @@ public class StockChangeService implements DeductStockUseCase, IncreaseStockUseC
     @Override
     public void increaseStockFromOrderCanceled(IncreaseStockCommand command) {
         Long productId = command.productId();
-        Product product = productRepository.findByIdWithLock(productId);
+        Product product = loadProductPort.loadProductWithLock(productId);
         product.increaseStockQuantity(command.quantity());
-        productRepository.save(product);
+        persistProductPort.persist(product);
     }
 }
