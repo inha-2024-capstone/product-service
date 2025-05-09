@@ -6,13 +6,15 @@ public record OrderCanceledEvent(
         String eventId,
         Long orderId,
         String eventType,
-        OrderCanceledEventData data,
+        OrderCanceledData data,
         LocalDateTime occurrenceDateTime
 ) {
-    public record OrderCanceledEventData(
+    public record OrderCanceledData(
             Long userId,
             Long productId,
-            Integer orderQuantity
+            Integer orderQuantity,
+            Boolean isStockOccupied,
+            Boolean isPaymentCompleted
     ) {
     }
 }

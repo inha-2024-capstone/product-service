@@ -23,6 +23,9 @@ public record KafkaConsumerProperties(
 
         boolean enableAutoCommit,
 
+        @NotBlank
+        String autoOffsetReset,
+
         @NotNull
         Map<String, Object> properties
 ) {
