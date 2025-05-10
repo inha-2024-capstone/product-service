@@ -18,14 +18,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class StockDeductionService implements DeductStockUseCase {
+public class DeductStockService implements DeductStockUseCase {
     private final LoadProductPort loadProductPort;
     private final SaveOutboxEventPort saveOutboxEventPort;
     private final PersistProductPort persistProductPort;
     private final OutboxEventFactory outboxEventFactory;
 
     @Override
-    public void applyDeduction(DeductStockCommandsFromOrderEvent commands) {
+    public void deductStock(DeductStockCommandsFromOrderEvent commands) {
         Product product = loadProductPort.loadProductWithLock(commands.productId());
         List<OutboxEvent> outboxEvents = processDeductStockCommands(product, commands);
 

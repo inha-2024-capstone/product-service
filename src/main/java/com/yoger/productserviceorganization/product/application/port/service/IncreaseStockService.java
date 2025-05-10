@@ -12,12 +12,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class StockIncreaseService implements IncreaseStockUseCase {
+public class IncreaseStockService implements IncreaseStockUseCase {
     private final LoadProductPort loadProductPort;
     private final PersistProductPort persistProductPort;
 
     @Override
-    public void applyIncrease(IncreaseStockCommand command) {
+    public void increaseStock(IncreaseStockCommand command) {
         Product product = loadProductPort.loadProductWithLock(command.productId());
         product.increaseStockQuantity(command.quantity());
         persistProductPort.persist(product);

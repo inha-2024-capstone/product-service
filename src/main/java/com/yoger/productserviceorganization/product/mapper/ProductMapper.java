@@ -5,7 +5,7 @@ import com.yoger.productserviceorganization.product.domain.model.Product;
 import com.yoger.productserviceorganization.product.domain.model.ProductState;
 import com.yoger.productserviceorganization.product.adapters.persistence.jpa.ProductJpaEntity;
 
-public class ProductMapper {
+public final class ProductMapper {
     private ProductMapper() {}
 
     public static ProductJpaEntity toEntityFrom(Product product) {
