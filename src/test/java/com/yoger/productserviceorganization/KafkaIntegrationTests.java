@@ -112,7 +112,7 @@ public class KafkaIntegrationTests {
                 UUID.randomUUID().toString(),
                 999L,
                 "OrderCreated",
-                new OrderCreatedEvent.OrderCreatedEventData(100L, 1L, 1),
+                new OrderCreatedEvent.OrderCreatedData(100L, 1L, 1),
                 LocalDateTime.now()
         );
 
@@ -135,7 +135,7 @@ public class KafkaIntegrationTests {
                 UUID.randomUUID().toString(),
                 999L,
                 "OrderCreated",
-                new OrderCreatedEvent.OrderCreatedEventData(100L, 1L, 1),
+                new OrderCreatedEvent.OrderCreatedData(100L, 1L, 1),
                 LocalDateTime.now()
         );
 
