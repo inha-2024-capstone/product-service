@@ -32,7 +32,7 @@ public class OrderCreatedEventConsumer {
                 groupDeductStockCommandsByProductId(deduplicatedEvents);
         try {
             deductStockCommandMap.forEach(
-                    (productId, deductStockCommandList) -> deductStockUseCase.applyDeduction(
+                    (productId, deductStockCommandList) -> deductStockUseCase.deductStock(
                             DeductStockCommandsFromOrderEvent.of(productId, deductStockCommandList)
                     )
             );

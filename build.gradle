@@ -20,7 +20,7 @@ configurations {
 }
 
 bootBuildImage {
-    imageName = 'haekwang/yoger-product-service-v5:latest'
+    imageName = 'haebyun/yoger-product-service-v8:latest'
 }
 
 repositories {
@@ -76,6 +76,7 @@ dependencies {
     // TestContainers
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.testcontainers:mysql'
+    testImplementation 'org.testcontainers:kafka'
     implementation 'org.testcontainers:localstack'
     testImplementation 'org.springframework.boot:spring-boot-starter-webflux'
 }

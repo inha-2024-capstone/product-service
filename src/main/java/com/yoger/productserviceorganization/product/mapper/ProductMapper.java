@@ -1,18 +1,18 @@
 package com.yoger.productserviceorganization.product.mapper;
 
+import com.yoger.productserviceorganization.product.application.port.in.command.RegisterProductCommand;
 import com.yoger.productserviceorganization.product.domain.model.Product;
 import com.yoger.productserviceorganization.product.domain.model.ProductState;
-import com.yoger.productserviceorganization.product.adapters.web.dto.request.DemoProductRequestDTO;
-import com.yoger.productserviceorganization.product.adapters.persistence.jpa.ProductEntity;
+import com.yoger.productserviceorganization.product.adapters.persistence.jpa.ProductJpaEntity;
 
-public class ProductMapper {
+public final class ProductMapper {
     private ProductMapper() {}
 
-    public static ProductEntity toEntityFrom(Product product) {
-        return ProductEntity.of(
+    public static ProductJpaEntity toEntityFrom(Product product) {
+        return ProductJpaEntity.of(
                 product.getId(),
                 product.getName(),
-                product.getPriceByQuantities(),
+                product.getPrice(),
                 product.getDescription(),
                 product.getImageUrl(),
                 product.getThumbnailImageUrl(),
@@ -20,16 +20,15 @@ public class ProductMapper {
                 product.getCreatorId(),
                 product.getCreatorName(),
                 product.getDueDate(),
-                product.getInitialStockQuantity(),
                 product.getStockQuantity()
         );
     }
 
-    public static Product toDomainFrom(ProductEntity productEntity) {
+    public static Product toDomainFrom(ProductJpaEntity productEntity) {
         return Product.of(
                 productEntity.getId(),
                 productEntity.getName(),
-                productEntity.getPriceByQuantities(),
+                productEntity.getPrice(),
                 productEntity.getDescription(),
                 productEntity.getImageUrl(),
                 productEntity.getThumbnailImageUrl(),
@@ -37,30 +36,27 @@ public class ProductMapper {
                 productEntity.getCreatorId(),
                 productEntity.getCreatorName(),
                 productEntity.getDueDate(),
-                productEntity.getInitialStockQuantity(),
                 productEntity.getStockQuantity()
         );
     }
 
     public static Product toDomainFrom(
-            Long creatorId,
-            DemoProductRequestDTO demoProductRequestDTO,
+            RegisterProductCommand registerProductCommand,
             String imageUrl,
             String thumbnailImageUrl
     ) {
         return Product.of(
                 null, // ID는 아직 생성되지 않았으므로 null
-                demoProductRequestDTO.name(),
-                null,
-                demoProductRequestDTO.description(),
+                registerProductCommand.getName(),
+                registerProductCommand.getPrice(),
+                registerProductCommand.getDescription(),
                 imageUrl,
                 thumbnailImageUrl,
-                ProductState.DEMO,
-                creatorId,
-                demoProductRequestDTO.creatorName(),
-                null,
-                0,
-                0
-        );
+                ProductState.SELLABLE,
+                registerProductCommand.getCreatorId(),
+                registerProductCommand.getCreatorName(),
+                registerProductCommand.getDueDate(),
+                registerProductCommand.getStockQuantity()
+                );
     }
 }

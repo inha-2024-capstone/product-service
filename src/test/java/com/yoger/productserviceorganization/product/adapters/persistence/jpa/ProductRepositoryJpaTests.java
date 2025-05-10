@@ -3,13 +3,11 @@ package com.yoger.productserviceorganization.product.adapters.persistence.jpa;
 import static org.assertj.core.api.Assertions.*;
 
 import com.yoger.productserviceorganization.global.config.DataConfig;
-import com.yoger.productserviceorganization.product.domain.model.PriceByQuantity;
 import com.yoger.productserviceorganization.product.domain.model.ProductState;
 import jakarta.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -30,24 +28,13 @@ public class ProductRepositoryJpaTests {
     @Autowired
     private JpaProductRepository productRepository;
 
-    private List<PriceByQuantity> priceByQuantities;
-
-    @BeforeEach
-    void setUp() {
-        priceByQuantities = List.of(
-                new PriceByQuantity(100, 10000)
-                , new PriceByQuantity(1000, 8500)
-                , new PriceByQuantity(10000, 7500)
-        );
-    }
-
     @Test
     @DisplayName("상품들이 정상적으로 저장되었는 지 테스트")
     void findAllProducts() {
-        ProductEntity product1 = ProductEntity.of(
+        ProductJpaEntity product1 = ProductJpaEntity.of(
                 null,
                 "유효한상품이름1",
-                priceByQuantities,
+                1000,
                 "상품에 대한 설명입니다.",
                 "https://my-bucket.s3.us-west-1.amazonaws.com/myimage.jpg",
                 "https://my-bucket.s3.us-west-1.amazonaws.com/my-thumbnail.jpg",
@@ -55,13 +42,12 @@ public class ProductRepositoryJpaTests {
                 1L, // creatorId
                 "제작자 이름1", // creatorName
                 LocalDateTime.now().plusDays(30), // dueDate
-                100, // initialStockQuantity
                 100 // stockQuantity
         );
-        ProductEntity product2 = ProductEntity.of(
+        ProductJpaEntity product2 = ProductJpaEntity.of(
                 null,
                 "유효한상품이름2",
-                priceByQuantities,
+                10000,
                 "상품에 대한 설명입니다.",
                 "https://my-bucket.s3.us-west-1.amazonaws.com/myimage.jpg",
                 "https://my-bucket.s3.us-west-1.amazonaws.com/my-thumbnail.jpg",
@@ -69,16 +55,15 @@ public class ProductRepositoryJpaTests {
                 2L, // creatorId
                 "제작자 이름2", // creatorName
                 LocalDateTime.now().plusDays(30), // dueDate
-                200, // initialStockQuantity
                 200 // stockQuantity
         );
-        ProductEntity savedProduct1 = productRepository.save(product1);
-        ProductEntity savedProduct2 = productRepository.save(product2);
+        ProductJpaEntity savedProduct1 = productRepository.save(product1);
+        ProductJpaEntity savedProduct2 = productRepository.save(product2);
 
-        List<ProductEntity> actualProducts = productRepository.findAll();
+        List<ProductJpaEntity> actualProducts = productRepository.findAll();
 
         assertThat(actualProducts)
-                .extracting(ProductEntity::getId)
+                .extracting(ProductJpaEntity::getId)
                 .contains(savedProduct1.getId(), savedProduct2.getId());
     }
 
@@ -88,10 +73,10 @@ public class ProductRepositoryJpaTests {
     void productValidationFailTest(String name, String description, String imageUrl, ProductState state,
                                    String thumbnailImageUrl, Long creatorId, String creatorName,
                                    String expectedMessage) {
-        ProductEntity product = ProductEntity.of(
+        ProductJpaEntity product = ProductJpaEntity.of(
                 null,
                 name,
-                priceByQuantities,
+                1000,
                 description,
                 imageUrl,
                 thumbnailImageUrl,
@@ -99,7 +84,6 @@ public class ProductRepositoryJpaTests {
                 creatorId,
                 creatorName,
                 LocalDateTime.now().plusDays(30), // dueDate
-                100, // initialStockQuantity
                 100 // stockQuantity
         );
 
@@ -176,10 +160,10 @@ public class ProductRepositoryJpaTests {
     @Test
     @DisplayName("상품이 정상적으로 삭제되는지 테스트")
     void deleteProduct() {
-        ProductEntity product = ProductEntity.of(
+        ProductJpaEntity product = ProductJpaEntity.of(
                 1L,
                 "유효한상품이름1",
-                priceByQuantities,
+                1000,
                 "상품에 대한 설명입니다.",
                 "https://my-bucket.s3.us-west-1.amazonaws.com/myimage.jpg",
                 "https://my-bucket.s3.us-west-1.amazonaws.com/my-thumbnail.jpg",
@@ -187,10 +171,9 @@ public class ProductRepositoryJpaTests {
                 1L, // creatorId
                 "제작자 이름1", // creatorName
                 LocalDateTime.now().plusDays(30), // dueDate
-                100, // initialStockQuantity
                 100 // stockQuantity
         );
-        ProductEntity savedProduct = productRepository.save(product);
+        ProductJpaEntity savedProduct = productRepository.save(product);
 
         // Ensure product exists before deletion
         assertThat(savedProduct.getName()).isEqualTo(product.getName());

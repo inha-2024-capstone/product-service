@@ -1,32 +1,29 @@
 package com.yoger.productserviceorganization.product.adapters.web.dto.response;
 
-import com.yoger.productserviceorganization.product.domain.model.PriceByQuantity;
 import com.yoger.productserviceorganization.product.domain.model.Product;
 import com.yoger.productserviceorganization.product.domain.model.ProductState;
 import java.time.LocalDateTime;
-import java.util.List;
 
-public record SimpleSellableProductResponseDTO(
+public record SimpleProductResponseDTO(
         Long id,
         String name,
-        List<PriceByQuantity> priceByQuantities,
+        Integer price,
         String thumbnailImageUrl,
         String creatorName,
-        int soldQuantity,
         LocalDateTime dueDate,
-        ProductState state
+        ProductState state,
+        Integer stockQuantity
 ) {
-    public static SimpleSellableProductResponseDTO from(Product product) {
-        int soldQuantity = product.getInitialStockQuantity() - product.getStockQuantity(); // 판매된 수량 계산
-        return new SimpleSellableProductResponseDTO(
+    public static SimpleProductResponseDTO from(Product product) {
+        return new SimpleProductResponseDTO(
                 product.getId(),
                 product.getName(),
-                product.getPriceByQuantities(),
+                product.getPrice(),
                 product.getThumbnailImageUrl(),
                 product.getCreatorName(),
-                soldQuantity,
                 product.getDueDate(),
-                product.getState()
+                product.getState(),
+                product.getStockQuantity()
         );
     }
 }

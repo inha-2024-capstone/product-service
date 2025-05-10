@@ -75,6 +75,7 @@ event:
     order:
       created: yoger.order.prd.created
       canceled: yoger.order.prd.canceled
+      completed: yoger.order.prd.completed
 
 cloud:
   aws:
@@ -106,3 +107,10 @@ management:
         enabled: true
 server:
   port: 8080  # 애플리케이션 포트 (필요에 따라 변경)
+
+springdoc:
+  api-docs:
+    path: /products/api-docs
+  swagger-ui:
+    path: /products/swagger-ui.html
+    url: /products/api-docs

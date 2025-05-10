@@ -1,10 +1,7 @@
 package com.yoger.productserviceorganization.product.adapters.persistence.jpa;
 
-import com.yoger.productserviceorganization.product.domain.model.PriceByQuantity;
 import com.yoger.productserviceorganization.product.domain.model.ProductState;
-import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.annotation.Nullable;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
@@ -12,17 +9,15 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Type;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -45,10 +40,9 @@ public class ProductJpaEntity {
     )
     private String name;
 
-    @Nullable
-    @Type(JsonType.class)
-    @Column(columnDefinition = "json")
-    private List<PriceByQuantity> priceByQuantities = new ArrayList<>();
+    @NotNull(message = "가격은 필수 항목입니다.")
+    @Min(value = 0, message = "가격은 0 이상이어야 합니다.")
+    private Integer price;
 
     @NotBlank(message = "상품에 대한 설명을 적어주세요.")
     @Size(min = 10, max = 500, message = "상품 상세 설명은 10글자 이상 500글자 이하만 가능합니다.")
@@ -87,8 +81,6 @@ public class ProductJpaEntity {
     @Nullable
     private LocalDateTime dueDate;
 
-    private int initialStockQuantity;
-
     private int stockQuantity;
 
     /*
@@ -99,7 +91,7 @@ public class ProductJpaEntity {
     public static ProductJpaEntity of(
             Long id,
             String name,
-            List<PriceByQuantity> priceByQuantities,
+            Integer price,
             String description,
             String imageUrl,
             String thumbnailImageUrl,
@@ -107,13 +99,12 @@ public class ProductJpaEntity {
             Long creatorId,
             String creatorName ,
             LocalDateTime dueDate,
-            int initialStockQuantity,
             int stockQuantity
     ) {
         return new ProductJpaEntity(
                 id,
                 name,
-                priceByQuantities,
+                price,
                 description,
                 imageUrl,
                 thumbnailImageUrl,
@@ -123,7 +114,6 @@ public class ProductJpaEntity {
                 null,
                 null,
                 dueDate,
-                initialStockQuantity,
                 stockQuantity
         );
     }
