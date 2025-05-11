@@ -1,8 +1,8 @@
 package com.yoger.productserviceorganization.product.application.port.service;
 
-import com.yoger.productserviceorganization.product.application.port.in.DeductStockUseCase;
-import com.yoger.productserviceorganization.product.application.port.in.command.DeductStockCommandFromOrderEvent;
-import com.yoger.productserviceorganization.product.application.port.in.command.DeductStockCommandsFromOrderEvent;
+import com.yoger.productserviceorganization.product.application.port.in.DeductStockFromOrdersUseCase;
+import com.yoger.productserviceorganization.product.application.port.in.command.DeductStockCommandFromOrder;
+import com.yoger.productserviceorganization.product.application.port.in.command.DeductStockBatchCommandFromOrder;
 import com.yoger.productserviceorganization.product.application.port.out.LoadProductPort;
 import com.yoger.productserviceorganization.product.application.port.out.PersistProductPort;
 import com.yoger.productserviceorganization.product.application.port.out.SaveOutboxEventPort;
@@ -18,16 +18,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class DeductStockService implements DeductStockUseCase {
+public class DeductStockFromOrdersService implements DeductStockFromOrdersUseCase {
     private final LoadProductPort loadProductPort;
     private final SaveOutboxEventPort saveOutboxEventPort;
     private final PersistProductPort persistProductPort;
     private final OutboxEventFactory outboxEventFactory;
 
     @Override
-    public void deductStock(DeductStockCommandsFromOrderEvent commands) {
-        Product product = loadProductPort.loadProductWithLock(commands.productId());
-        List<OutboxEvent> outboxEvents = processDeductStockCommands(product, commands);
+    public void deductStockFromOrders(DeductStockBatchCommandFromOrder batchCommand) {
+        Product product = loadProductPort.loadProductWithLock(batchCommand.getProductId());
+        List<OutboxEvent> outboxEvents = processDeductStockCommands(product, batchCommand);
 
         saveOutboxEventPort.saveAll(outboxEvents);
 
@@ -36,17 +36,17 @@ public class DeductStockService implements DeductStockUseCase {
 
     private List<OutboxEvent> processDeductStockCommands(
             Product product,
-            DeductStockCommandsFromOrderEvent commands
+            DeductStockBatchCommandFromOrder batchCommand
     ) {
         List<OutboxEvent> outboxEvents = new ArrayList<>();
 
-        for (DeductStockCommandFromOrderEvent commandEvent : commands.deductStockCommands()) {
-            int orderQuantity = commandEvent.deductStockCommand().quantity();
+        for (DeductStockCommandFromOrder command : batchCommand.getDeductStockCommands()) {
+            int orderQuantity = command.getDeductStockCommand().getQuantity();
             try {
                 product.deductStockQuantity(orderQuantity);
-                outboxEvents.add(outboxEventFactory.createDeductionCompletedEvent(product.getId(), commandEvent));
+                outboxEvents.add(outboxEventFactory.createDeductionCompletedEvent(command));
             } catch (InsufficientStockException e) {
-                outboxEvents.add(outboxEventFactory.createDeductionFailedEvent(product.getId(), commandEvent));
+                outboxEvents.add(outboxEventFactory.createDeductionFailedEvent(command));
             }
         }
         return outboxEvents;
