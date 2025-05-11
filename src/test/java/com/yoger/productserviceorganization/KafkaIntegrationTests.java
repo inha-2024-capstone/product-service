@@ -85,6 +85,7 @@ public class KafkaIntegrationTests {
     @AfterEach
     void cleanUp() {
         jdbcTemplate.execute("TRUNCATE TABLE product_jpa_entity");
+        jdbcTemplate.execute("TRUNCATE TABLE outbox");
         stringRedisTemplate.getConnectionFactory().getConnection().serverCommands().flushAll();
     }
 
@@ -160,6 +161,80 @@ public class KafkaIntegrationTests {
             tx.executeWithoutResult(status -> {
                 Product product = loadProductPort.loadProductWithLock(1L);
                 assertThat(product.getStockQuantity()).isEqualTo(99);
+            });
+        });
+    }
+
+    @Test
+    void testEventStoredInOutboxOnSuccess() throws Exception {
+        OrderCreatedEvent event = new OrderCreatedEvent(
+                UUID.randomUUID().toString(),
+                999L,
+                "OrderCreated",
+                new OrderCreatedEvent.OrderCreatedData(100L, 1L, 1),
+                LocalDateTime.now()
+        );
+
+        kafkaTemplate.send("yoger.order.prd.created", event);
+        kafkaTemplate.flush();
+
+        // 1. 재고 차감 검증
+        await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
+            TransactionTemplate tx = new TransactionTemplate(transactionManager);
+            tx.executeWithoutResult(status -> {
+                Product product = loadProductPort.loadProductWithLock(1L);
+                assertThat(product.getStockQuantity()).isEqualTo(99);
+            });
+        });
+
+        // 2. deductionCompleted OutboxEvent 저장 검증
+        await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
+            TransactionTemplate tx = new TransactionTemplate(transactionManager);
+            tx.executeWithoutResult(status -> {
+                Integer count = jdbcTemplate.queryForObject("""
+                        SELECT COUNT(*) FROM outbox
+                        WHERE event_type = 'deductionCompleted'
+                          AND payload LIKE '%"orderId":999%'
+                    """, Integer.class
+                );
+                assertThat(count).isEqualTo(1);
+            });
+        });
+    }
+
+    @Test
+    void testEventStoredInOutboxOnFail() throws Exception {
+        OrderCreatedEvent event = new OrderCreatedEvent(
+                UUID.randomUUID().toString(),
+                999L,
+                "OrderCreated",
+                new OrderCreatedEvent.OrderCreatedData(100L, 1L, 500), // 재고 수량보다 많은 주문
+                LocalDateTime.now()
+        );
+
+        kafkaTemplate.send("yoger.order.prd.created", event);
+        kafkaTemplate.flush();
+
+        // 1. 재고 차감 실패 검증
+        await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
+            TransactionTemplate tx = new TransactionTemplate(transactionManager);
+            tx.executeWithoutResult(status -> {
+                Product product = loadProductPort.loadProductWithLock(1L);
+                assertThat(product.getStockQuantity()).isEqualTo(100);
+            });
+        });
+
+        // 2. deductionFailed OutboxEvent 저장 검증
+        await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
+            TransactionTemplate tx = new TransactionTemplate(transactionManager);
+            tx.executeWithoutResult(status -> {
+                Integer count = jdbcTemplate.queryForObject("""
+                        SELECT COUNT(*) FROM outbox
+                        WHERE event_type = 'deductionFailed'
+                          AND payload LIKE '%"orderId":999%'
+                    """, Integer.class
+                );
+                assertThat(count).isEqualTo(1);
             });
         });
     }
