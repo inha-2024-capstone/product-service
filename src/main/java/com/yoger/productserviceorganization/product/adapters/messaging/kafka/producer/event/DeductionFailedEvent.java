@@ -1,6 +1,6 @@
 package com.yoger.productserviceorganization.product.adapters.messaging.kafka.producer.event;
 
-import com.yoger.productserviceorganization.product.application.port.in.command.DeductStockCommandFromOrderEvent;
+import com.yoger.productserviceorganization.product.application.port.in.command.DeductStockCommandFromOrder;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -21,14 +21,14 @@ public record DeductionFailedEvent(
         }
     }
 
-    public static DeductionFailedEvent from(Long productId, DeductStockCommandFromOrderEvent deductStockCommandFromOrderEvent) {
+    public static DeductionFailedEvent from(Long productId, DeductStockCommandFromOrder command) {
         return new DeductionFailedEvent(
                 UUID.randomUUID().toString(),
                 productId,
                 "deductionFailed",
                 DeductionFailedEventData.of(
-                        deductStockCommandFromOrderEvent.orderId(),
-                        deductStockCommandFromOrderEvent.deductStockCommand().quantity()
+                        command.getOrderId(),
+                        command.getDeductStockCommand().getQuantity()
                 ),
                 LocalDateTime.now()
         );

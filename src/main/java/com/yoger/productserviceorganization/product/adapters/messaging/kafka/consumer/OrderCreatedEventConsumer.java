@@ -2,15 +2,15 @@ package com.yoger.productserviceorganization.product.adapters.messaging.kafka.co
 
 import com.yoger.productserviceorganization.product.adapters.messaging.kafka.consumer.dedup.EventDeduplicateService;
 import com.yoger.productserviceorganization.product.adapters.messaging.kafka.consumer.event.OrderCreatedEvent;
-import com.yoger.productserviceorganization.product.application.port.in.command.DeductStockCommandFromOrderEvent;
-import com.yoger.productserviceorganization.product.application.port.in.command.DeductStockCommandsFromOrderEvent;
-import com.yoger.productserviceorganization.product.application.port.in.DeductStockUseCase;
-import java.util.ArrayList;
-import java.util.HashMap;
+import com.yoger.productserviceorganization.product.application.port.in.DeductStockFromOrdersUseCase;
+import com.yoger.productserviceorganization.product.application.port.in.command.DeductStockBatchCommandFromOrder;
+import com.yoger.productserviceorganization.product.application.port.in.command.DeductStockCommandFromOrder;
+import com.yoger.productserviceorganization.product.mapper.EventMapper;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
@@ -19,55 +19,46 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class OrderCreatedEventConsumer {
+
     private final EventDeduplicateService eventDeduplicateService;
-    private final DeductStockUseCase deductStockUseCase;
+    private final DeductStockFromOrdersUseCase deductStockFromOrdersUseCase;
 
     @KafkaListener(
             topics = "${event.topic.order.created}",
             containerFactory = "kafkaOrderCreatedEventListenerContainerFactory"
     )
-    public void consumeOrderCreatedEventBatch(List<OrderCreatedEvent> events, Acknowledgment acknowledgment) {
-        List<OrderCreatedEvent> deduplicatedEvents = createDeduplicatedEvents(events);
-        Map<Long, List<DeductStockCommandFromOrderEvent>> deductStockCommandMap =
-                groupDeductStockCommandsByProductId(deduplicatedEvents);
+    public void consumeOrderCreatedEventBatch(List<OrderCreatedEvent> events, Acknowledgment ack) {
         try {
-            deductStockCommandMap.forEach(
-                    (productId, deductStockCommandList) -> deductStockUseCase.deductStock(
-                            DeductStockCommandsFromOrderEvent.of(productId, deductStockCommandList)
-                    )
-            );
-            deduplicatedEvents.forEach(e -> eventDeduplicateService.putKey(e.eventId()));
-            acknowledgment.acknowledge();  // 메시지 처리 후 커밋
+            List<OrderCreatedEvent> filteredEvents = filterDeduplicatedEvents(events);
+
+            Map<Long, List<DeductStockCommandFromOrder>> groupedCommands =
+                    toGroupedDeductCommands(filteredEvents);
+
+            for (Map.Entry<Long, List<DeductStockCommandFromOrder>> entry : groupedCommands.entrySet()) {
+                DeductStockBatchCommandFromOrder commandBatch =
+                        new DeductStockBatchCommandFromOrder(entry.getKey(), entry.getValue());
+                deductStockFromOrdersUseCase.deductStockFromOrders(commandBatch);
+            }
+
+            filteredEvents.forEach(e -> eventDeduplicateService.putKey(e.eventId()));
+            ack.acknowledge();
+
         } catch (Exception e) {
             throw new RuntimeException("Failed to process order events", e);
         }
     }
 
-    private List<OrderCreatedEvent> createDeduplicatedEvents(List<OrderCreatedEvent> events) {
-        Set<String> encounteredIds = new HashSet<>();
+    private List<OrderCreatedEvent> filterDeduplicatedEvents(List<OrderCreatedEvent> events) {
+        Set<String> seen = new HashSet<>();
         return events.stream()
-                .filter(event -> encounteredIds.add(event.eventId()))
-                .filter(event -> !eventDeduplicateService.isDuplicate(event.eventId()))
+                .filter(e -> seen.add(e.eventId())) // 중복된 이벤트 ID 제거 (같은 배치 내에서)
+                .filter(e -> !eventDeduplicateService.isDuplicate(e.eventId())) // Redis 등으로 전체 중복 제거
                 .toList();
     }
 
-    private Map<Long, List<DeductStockCommandFromOrderEvent>> groupDeductStockCommandsByProductId(List<OrderCreatedEvent> events) {
-        Map<Long, List<DeductStockCommandFromOrderEvent>> deductStockCommandMap = new HashMap<>();
-        events.forEach(orderCreatedEvent -> {
-            Long productId = orderCreatedEvent.data().productId();
-            List<DeductStockCommandFromOrderEvent> deductStockCommands = deductStockCommandMap.computeIfAbsent(
-                    productId,
-                    k -> new ArrayList<>()
-            );
-
-            deductStockCommands.add(
-                    DeductStockCommandFromOrderEvent.of(
-                            orderCreatedEvent.orderId(),
-                            orderCreatedEvent.data().orderQuantity(),
-                            orderCreatedEvent.occurrenceDateTime()
-                    )
-            );
-        });
-        return deductStockCommandMap;
+    private Map<Long, List<DeductStockCommandFromOrder>> toGroupedDeductCommands(List<OrderCreatedEvent> events) {
+        return events.stream()
+                .map(EventMapper::toCommand)
+                .collect(Collectors.groupingBy(cmd -> cmd.getDeductStockCommand().getProductId()));
     }
 }
