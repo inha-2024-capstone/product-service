@@ -20,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -40,6 +41,11 @@ import org.testcontainers.utility.DockerImageName;
 @ActiveProfiles("integration")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class KafkaIntegrationTests {
+    private static final String ORDER_CREATED_TYPE = "OrderCreated";
+
+    @Value("${event.topic.order.created}")
+    private String orderCreatedEventTopic;
+
     @Container
     static KafkaContainer kafkaContainer = new KafkaContainer(
             DockerImageName.parse("confluentinc/cp-kafka:7.2.1")
@@ -85,6 +91,7 @@ public class KafkaIntegrationTests {
     @AfterEach
     void cleanUp() {
         jdbcTemplate.execute("TRUNCATE TABLE product_jpa_entity");
+        jdbcTemplate.execute("TRUNCATE TABLE outbox");
         stringRedisTemplate.getConnectionFactory().getConnection().serverCommands().flushAll();
     }
 
@@ -111,13 +118,13 @@ public class KafkaIntegrationTests {
         OrderCreatedEvent event = new OrderCreatedEvent(
                 UUID.randomUUID().toString(),
                 999L,
-                "OrderCreated",
+                ORDER_CREATED_TYPE,
                 new OrderCreatedEvent.OrderCreatedData(100L, 1L, 1),
                 LocalDateTime.now()
         );
 
         // Awaitility로 최대 10초 기다리며 재시도
-        kafkaTemplate.send("yoger.order.prd.created", event);
+        kafkaTemplate.send(orderCreatedEventTopic, event);
         kafkaTemplate.flush();
 
         await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
@@ -134,12 +141,12 @@ public class KafkaIntegrationTests {
         OrderCreatedEvent event = new OrderCreatedEvent(
                 UUID.randomUUID().toString(),
                 999L,
-                "OrderCreated",
+                ORDER_CREATED_TYPE,
                 new OrderCreatedEvent.OrderCreatedData(100L, 1L, 1),
                 LocalDateTime.now()
         );
 
-        kafkaTemplate.send("yoger.order.prd.created", event);
+        kafkaTemplate.send(orderCreatedEventTopic, event);
         kafkaTemplate.flush();
 
         await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
@@ -152,7 +159,7 @@ public class KafkaIntegrationTests {
 
         Thread.sleep(1000);
 
-        kafkaTemplate.send("yoger.order.prd.created", event);
+        kafkaTemplate.send(orderCreatedEventTopic, event);
         kafkaTemplate.flush();
 
         await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
@@ -160,6 +167,80 @@ public class KafkaIntegrationTests {
             tx.executeWithoutResult(status -> {
                 Product product = loadProductPort.loadProductWithLock(1L);
                 assertThat(product.getStockQuantity()).isEqualTo(99);
+            });
+        });
+    }
+
+    @Test
+    void testEventStoredInOutboxOnSuccess() throws Exception {
+        OrderCreatedEvent event = new OrderCreatedEvent(
+                UUID.randomUUID().toString(),
+                999L,
+                ORDER_CREATED_TYPE,
+                new OrderCreatedEvent.OrderCreatedData(100L, 1L, 1),
+                LocalDateTime.now()
+        );
+
+        kafkaTemplate.send(orderCreatedEventTopic, event);
+        kafkaTemplate.flush();
+
+        // 1. 재고 차감 검증
+        await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
+            TransactionTemplate tx = new TransactionTemplate(transactionManager);
+            tx.executeWithoutResult(status -> {
+                Product product = loadProductPort.loadProductWithLock(1L);
+                assertThat(product.getStockQuantity()).isEqualTo(99);
+            });
+        });
+
+        // 2. deductionCompleted OutboxEvent 저장 검증
+        await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
+            TransactionTemplate tx = new TransactionTemplate(transactionManager);
+            tx.executeWithoutResult(status -> {
+                Integer count = jdbcTemplate.queryForObject("""
+                        SELECT COUNT(*) FROM outbox
+                        WHERE event_type = 'deductionCompleted'
+                          AND payload LIKE '%"orderId":999%'
+                    """, Integer.class
+                );
+                assertThat(count).isEqualTo(1);
+            });
+        });
+    }
+
+    @Test
+    void testEventStoredInOutboxOnFail() throws Exception {
+        OrderCreatedEvent event = new OrderCreatedEvent(
+                UUID.randomUUID().toString(),
+                999L,
+                ORDER_CREATED_TYPE,
+                new OrderCreatedEvent.OrderCreatedData(100L, 1L, 500), // 재고 수량보다 많은 주문
+                LocalDateTime.now()
+        );
+
+        kafkaTemplate.send(orderCreatedEventTopic, event);
+        kafkaTemplate.flush();
+
+        // 1. 재고 차감 실패 검증
+        await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
+            TransactionTemplate tx = new TransactionTemplate(transactionManager);
+            tx.executeWithoutResult(status -> {
+                Product product = loadProductPort.loadProductWithLock(1L);
+                assertThat(product.getStockQuantity()).isEqualTo(100);
+            });
+        });
+
+        // 2. deductionFailed OutboxEvent 저장 검증
+        await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
+            TransactionTemplate tx = new TransactionTemplate(transactionManager);
+            tx.executeWithoutResult(status -> {
+                Integer count = jdbcTemplate.queryForObject("""
+                        SELECT COUNT(*) FROM outbox
+                        WHERE event_type = 'deductionFailed'
+                          AND payload LIKE '%"orderId":999%'
+                    """, Integer.class
+                );
+                assertThat(count).isEqualTo(1);
             });
         });
     }
