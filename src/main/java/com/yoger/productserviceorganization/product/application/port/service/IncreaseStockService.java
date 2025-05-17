@@ -18,8 +18,8 @@ public class IncreaseStockService implements IncreaseStockUseCase {
 
     @Override
     public void increaseStock(IncreaseStockCommand command) {
-        Product product = loadProductPort.loadProductWithLock(command.productId());
-        product.increaseStockQuantity(command.quantity());
+        Product product = loadProductPort.loadProductWithLock(command.getProductId());
+        product.increaseStockQuantity(command.getQuantity());
         persistProductPort.persist(product);
     }
 }

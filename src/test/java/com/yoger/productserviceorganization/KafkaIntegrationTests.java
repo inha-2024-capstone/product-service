@@ -5,7 +5,7 @@ import static org.awaitility.Awaitility.await;
 
 import com.yoger.productserviceorganization.config.RedisTestConfig;
 import com.yoger.productserviceorganization.product.adapters.messaging.kafka.consumer.event.OrderCreatedEvent;
-import com.yoger.productserviceorganization.product.application.port.in.DeductStockUseCase;
+import com.yoger.productserviceorganization.product.application.port.in.DeductStockFromOrdersUseCase;
 import com.yoger.productserviceorganization.product.application.port.out.LoadProductPort;
 import com.yoger.productserviceorganization.product.application.port.out.ManageProductImagePort;
 import com.yoger.productserviceorganization.product.application.port.out.PersistProductPort;
@@ -59,7 +59,7 @@ public class KafkaIntegrationTests {
     KafkaTemplate<String, Object> kafkaTemplate;
 
     @Autowired
-    DeductStockUseCase deductStockUseCase;
+    DeductStockFromOrdersUseCase deductStockFromOrdersUseCase;
 
     @Autowired
     LoadProductPort loadProductPort;
