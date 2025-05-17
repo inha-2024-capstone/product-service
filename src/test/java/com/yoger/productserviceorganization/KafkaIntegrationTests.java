@@ -20,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -41,7 +42,9 @@ import org.testcontainers.utility.DockerImageName;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class KafkaIntegrationTests {
     private static final String ORDER_CREATED_TYPE = "OrderCreated";
-    private static final String ORDER_CREATED_EVENT_TOPIC = "yoger.order.prd.created";
+
+    @Value("${event.topic.order.created}")
+    private String orderCreatedEventTopic;
 
     @Container
     static KafkaContainer kafkaContainer = new KafkaContainer(
@@ -121,7 +124,7 @@ public class KafkaIntegrationTests {
         );
 
         // Awaitility로 최대 10초 기다리며 재시도
-        kafkaTemplate.send(ORDER_CREATED_EVENT_TOPIC, event);
+        kafkaTemplate.send(orderCreatedEventTopic, event);
         kafkaTemplate.flush();
 
         await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
@@ -143,7 +146,7 @@ public class KafkaIntegrationTests {
                 LocalDateTime.now()
         );
 
-        kafkaTemplate.send(ORDER_CREATED_EVENT_TOPIC, event);
+        kafkaTemplate.send(orderCreatedEventTopic, event);
         kafkaTemplate.flush();
 
         await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
@@ -156,7 +159,7 @@ public class KafkaIntegrationTests {
 
         Thread.sleep(1000);
 
-        kafkaTemplate.send(ORDER_CREATED_EVENT_TOPIC, event);
+        kafkaTemplate.send(orderCreatedEventTopic, event);
         kafkaTemplate.flush();
 
         await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
@@ -178,7 +181,7 @@ public class KafkaIntegrationTests {
                 LocalDateTime.now()
         );
 
-        kafkaTemplate.send(ORDER_CREATED_EVENT_TOPIC, event);
+        kafkaTemplate.send(orderCreatedEventTopic, event);
         kafkaTemplate.flush();
 
         // 1. 재고 차감 검증
@@ -215,7 +218,7 @@ public class KafkaIntegrationTests {
                 LocalDateTime.now()
         );
 
-        kafkaTemplate.send(ORDER_CREATED_EVENT_TOPIC, event);
+        kafkaTemplate.send(orderCreatedEventTopic, event);
         kafkaTemplate.flush();
 
         // 1. 재고 차감 실패 검증

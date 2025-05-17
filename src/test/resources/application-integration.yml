@@ -19,3 +19,8 @@ spring:
     redis:
       host: localhost  # 또는 docker-compose 시 서비스 이름
       port: 6379
+
+event:
+  topic:
+    order:
+      created: yoger.order.prd.created
