@@ -1,13 +1,10 @@
-package com.yoger.productserviceorganization.product.adapters.persistence;
+package com.yoger.productserviceorganization.product.adapters.persistence.jpa;
 
-import com.yoger.productserviceorganization.product.adapters.persistence.jpa.JpaProductRepository;
-import com.yoger.productserviceorganization.product.adapters.persistence.jpa.ProductJpaEntity;
 import com.yoger.productserviceorganization.product.application.port.out.LoadProductPort;
 import com.yoger.productserviceorganization.product.application.port.out.PersistProductPort;
 import com.yoger.productserviceorganization.product.domain.exception.ProductNotFoundException;
 import com.yoger.productserviceorganization.product.domain.model.Product;
 import com.yoger.productserviceorganization.product.domain.model.ProductState;
-import com.yoger.productserviceorganization.product.mapper.ProductMapper;
 import java.time.Duration;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +13,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class ProductPersistenceAdapter implements LoadProductPort, PersistProductPort {
+class ProductPersistenceAdapter implements LoadProductPort, PersistProductPort {
     private static final String PRODUCT_ENTITY_CACHE = "productEntity : ";
     private static final String PRODUCT_ENTITY_CACHE_BY_STATE = "productEntitiesByState : ";
 

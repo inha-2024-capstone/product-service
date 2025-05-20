@@ -24,6 +24,7 @@ spring:
         jdbc:
           batch_size: 300
     database: mysql
+    open-in-view: false
   servlet:
     multipart:
       max-file-size: 100MB

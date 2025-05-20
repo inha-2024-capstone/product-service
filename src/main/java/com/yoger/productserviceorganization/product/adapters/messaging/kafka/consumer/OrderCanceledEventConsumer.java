@@ -1,6 +1,5 @@
 package com.yoger.productserviceorganization.product.adapters.messaging.kafka.consumer;
 
-import com.yoger.productserviceorganization.product.adapters.messaging.kafka.consumer.dedup.EventDeduplicateService;
 import com.yoger.productserviceorganization.product.adapters.messaging.kafka.consumer.event.OrderCanceledEvent;
 import com.yoger.productserviceorganization.product.application.port.in.IncreaseStockUseCase;
 import com.yoger.productserviceorganization.product.mapper.EventMapper;
@@ -10,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class OrderCanceledEventConsumer {
+class OrderCanceledEventConsumer {
     private final EventDeduplicateService eventDeduplicateService;
     private final IncreaseStockUseCase increaseStockUseCase;
 

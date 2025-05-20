@@ -5,7 +5,7 @@ import com.yoger.productserviceorganization.product.application.port.in.command.
 import com.yoger.productserviceorganization.product.application.port.out.ManageProductImagePort;
 import com.yoger.productserviceorganization.product.application.port.out.PersistProductPort;
 import com.yoger.productserviceorganization.product.domain.model.Product;
-import com.yoger.productserviceorganization.product.mapper.ProductMapper;
+import com.yoger.productserviceorganization.product.domain.model.ProductState;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +26,7 @@ public class RegisterProductService implements RegisterProductUseCase {
 
         registerTransactionSynchronizationForImageDeletion(imageUrl, thumbnailImageUrl);
 
-        Product product = ProductMapper.toDomainFrom(registerProductCommand, imageUrl, thumbnailImageUrl);
+        Product product = toDomainFrom(registerProductCommand, imageUrl, thumbnailImageUrl);
         return persistProductPort.persist(product);
     }
 
@@ -45,5 +45,25 @@ public class RegisterProductService implements RegisterProductUseCase {
         for (String imageUrl : imageUrls) {
             manageProductImagePort.deleteImage(imageUrl);
         }
+    }
+
+    private Product toDomainFrom(
+            RegisterProductCommand registerProductCommand,
+            String imageUrl,
+            String thumbnailImageUrl
+    ) {
+        return Product.of(
+                null, // ID는 아직 생성되지 않았으므로 null
+                registerProductCommand.getName(),
+                registerProductCommand.getPrice(),
+                registerProductCommand.getDescription(),
+                imageUrl,
+                thumbnailImageUrl,
+                ProductState.SELLABLE,
+                registerProductCommand.getCreatorId(),
+                registerProductCommand.getCreatorName(),
+                registerProductCommand.getDueDate(),
+                registerProductCommand.getStockQuantity()
+        );
     }
 }
