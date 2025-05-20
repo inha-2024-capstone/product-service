@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class OutboxEventJpaEntity {
+class OutboxEventJpaEntity {
     @Id
     private String id;
 

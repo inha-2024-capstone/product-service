@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/products/register")
 @RequiredArgsConstructor
-public class RegisterProductController {
+class RegisterProductController {
     private final RegisterProductUseCase registerProductUseCase;
 
     //TODO : 추후 배포시에는 Interceptor 를 사용하여, ADMIN 권한을 가진 사용자만 register 하도록 방어

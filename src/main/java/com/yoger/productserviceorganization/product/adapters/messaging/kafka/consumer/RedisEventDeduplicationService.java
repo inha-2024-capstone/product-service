@@ -1,4 +1,4 @@
-package com.yoger.productserviceorganization.product.adapters.messaging.kafka.consumer.dedup;
+package com.yoger.productserviceorganization.product.adapters.messaging.kafka.consumer;
 
 import java.time.Duration;
 import lombok.RequiredArgsConstructor;
@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class RedisEventDeduplicationService implements EventDeduplicateService{
+class RedisEventDeduplicationService implements EventDeduplicateService{
     private final StringRedisTemplate redisTemplate;
 
     private static final String KEY_PREFIX = "processed_event : ";

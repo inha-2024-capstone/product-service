@@ -1,12 +1,11 @@
-package com.yoger.productserviceorganization.product.mapper;
+package com.yoger.productserviceorganization.product.adapters.persistence.jpa;
 
-import com.yoger.productserviceorganization.product.adapters.persistence.jpa.OutboxEventJpaEntity;
 import com.yoger.productserviceorganization.product.domain.event.OutboxEvent;
 
-public final class OutboxEventMapper {
+final class OutboxEventMapper {
     private OutboxEventMapper() {}
 
-    public static OutboxEventJpaEntity toEntity(OutboxEvent domain) {
+    static OutboxEventJpaEntity toEntity(OutboxEvent domain) {
         return new OutboxEventJpaEntity(
                 domain.id(),
                 domain.aggregateType(),

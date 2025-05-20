@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 @Slf4j
-public class ProductControllerAdvice {
+class ProductControllerAdvice {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleAllError(Exception ex) {
         log.info("wierd problem occur.");

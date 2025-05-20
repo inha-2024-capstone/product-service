@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface JpaProductRepository extends JpaRepository<ProductJpaEntity, Long> {
+interface JpaProductRepository extends JpaRepository<ProductJpaEntity, Long> {
     List<ProductJpaEntity> findByState(ProductState state);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)

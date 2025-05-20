@@ -1,6 +1,5 @@
 package com.yoger.productserviceorganization.product.adapters.messaging.kafka.consumer;
 
-import com.yoger.productserviceorganization.product.adapters.messaging.kafka.consumer.dedup.EventDeduplicateService;
 import com.yoger.productserviceorganization.product.adapters.messaging.kafka.consumer.event.OrderCreatedEvent;
 import com.yoger.productserviceorganization.product.application.port.in.DeductStockFromOrdersUseCase;
 import com.yoger.productserviceorganization.product.application.port.in.command.DeductStockBatchCommandFromOrder;
@@ -18,8 +17,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class OrderCreatedEventConsumer {
-
+class OrderCreatedEventConsumer {
     private final EventDeduplicateService eventDeduplicateService;
     private final DeductStockFromOrdersUseCase deductStockFromOrdersUseCase;
 
