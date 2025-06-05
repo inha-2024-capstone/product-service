@@ -56,7 +56,7 @@ spring:
     consumer:
       bootstrap-servers: kafka.confluent.svc.cluster.local:9092
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       group-id: product-service-group
       enable-auto-commit: false   # 수동 커밋 -> 트랜잭션적 커밋을 위해
       auto-offset-reset: earliest
@@ -70,6 +70,9 @@ spring:
         # 브로커가 적어도 이만큼 데이터가 쌓이면 보내도록
         # 1이면 "1바이트 이상" 즉, 거의 즉시
         fetch-min-bytes: 1
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.value.default.type: com.yoger.productserviceorganization.product.adapters.messaging.kafka.consumer.event.OrderCreatedEvent
+        spring.json.trusted.packages: "*"
 
 event:
   topic:

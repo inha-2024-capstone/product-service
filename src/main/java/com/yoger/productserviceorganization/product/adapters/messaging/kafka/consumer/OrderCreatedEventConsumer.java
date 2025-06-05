@@ -39,10 +39,10 @@ class OrderCreatedEventConsumer {
             }
 
             filteredEvents.forEach(e -> eventDeduplicateService.putKey(e.eventId()));
-            ack.acknowledge();
-
         } catch (Exception e) {
             throw new RuntimeException("Failed to process order events", e);
+        } finally {
+            ack.acknowledge();
         }
     }
 
