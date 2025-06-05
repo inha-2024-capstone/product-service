@@ -46,7 +46,7 @@ public class KafkaConfig {
     @Bean
     public DefaultErrorHandler kafkaErrorHandler(KafkaTemplate<Object, Object> kafkaTemplate) {
         DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(kafkaTemplate);
-        var backOff = new ExponentialBackOffWithMaxRetries(0); // 재시도 없이 바로 DLQ 전송
+        ExponentialBackOffWithMaxRetries backOff = new ExponentialBackOffWithMaxRetries(0); // 재시도 없이 바로 DLQ 전송
         return new DefaultErrorHandler(recoverer, backOff);
     }
 
