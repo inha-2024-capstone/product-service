@@ -18,7 +18,7 @@ class Stock {
     }
 
     void change(int amount) {
-        if (this.stockQuantity < (-1) * amount) {
+        if (this.stockQuantity + amount < 0) {
             throw new InsufficientStockException("재고 수량이 부족합니다.");
         }
         this.stockQuantity += amount;
