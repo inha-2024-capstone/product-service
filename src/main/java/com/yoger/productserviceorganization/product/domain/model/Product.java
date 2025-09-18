@@ -16,7 +16,7 @@ public class Product {
     private final Long creatorId;
     private final String creatorName;
     private final LocalDateTime dueDate;
-    private final Stock StockQuantity;
+    private final Stock stockQuantity;
 
     private Product(
             Long id,
@@ -41,7 +41,7 @@ public class Product {
         this.creatorId = creatorId;
         this.creatorName = creatorName;
         this.dueDate = dueDate;
-        this.StockQuantity = stock;
+        this.stockQuantity = stock;
     }
 
     public static Product of(
@@ -85,22 +85,22 @@ public class Product {
                 sellableProduct.creatorId,
                 sellableProduct.creatorName,
                 sellableProduct.dueDate,
-                sellableProduct.StockQuantity
+                sellableProduct.stockQuantity
         );
     }
 
     public void deductStockQuantity(Integer quantity) {
         validateUnexpectedState(ProductState.SELLABLE);
-        this.StockQuantity.change(-quantity);
+        this.stockQuantity.change(-quantity);
     }
 
     public void increaseStockQuantity(Integer quantity) {
         validateUnexpectedState(ProductState.SELLABLE);
-        this.StockQuantity.change(quantity);
+        this.stockQuantity.change(quantity);
     }
 
     public int getStockQuantity() {
-        return StockQuantity.getStockQuantity();
+        return stockQuantity.getStockQuantity();
     }
 
     public void validateUnexpectedState(ProductState expectedState) {
