@@ -9,8 +9,8 @@ public record DeductionFailedEvent(
         Long productId,
         String eventType,
         DeductionFailedEventData data,
-        LocalDateTime occurrenceDateTime
-
+        LocalDateTime occurrenceDateTime,
+        String tracingProps
 ) {
     public record DeductionFailedEventData(
             Long orderId,
@@ -21,7 +21,7 @@ public record DeductionFailedEvent(
         }
     }
 
-    public static DeductionFailedEvent from(Long productId, DeductStockCommandFromOrder command) {
+    public static DeductionFailedEvent from(Long productId, DeductStockCommandFromOrder command, String tracingProps) {
         return new DeductionFailedEvent(
                 UUID.randomUUID().toString(),
                 productId,
@@ -30,7 +30,8 @@ public record DeductionFailedEvent(
                         command.getOrderId(),
                         command.getDeductStockCommand().getQuantity()
                 ),
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                tracingProps
         );
     }
 }

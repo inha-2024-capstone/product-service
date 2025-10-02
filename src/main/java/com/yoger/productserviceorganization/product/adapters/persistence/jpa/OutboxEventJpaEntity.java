@@ -1,6 +1,5 @@
 package com.yoger.productserviceorganization.product.adapters.persistence.jpa;
 
-import com.yoger.productserviceorganization.global.config.TraceUtil;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -17,48 +16,46 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 class OutboxEventJpaEntity {
+
     @Id
     private String id;
 
-    @Column(name="tracingspancontext")
+    @Column(name = "tracingspancontext", columnDefinition = "TEXT", nullable = false)
     private String tracingSpanContext;
 
-    private String aggregate_type;
+    @Column(name = "aggregate_type")
+    private String aggregateType;
 
-    private String aggregateid;
+    @Column(name = "aggregateid")
+    private String aggregateId;
 
-    private String event_type;
+    @Column(name = "event_type")
+    private String eventType;
 
     @Lob
-    private String payload; // DeductionCompletedEvent JSON
+    @Column(name = "payload", columnDefinition = "LONGTEXT", nullable = false)
+    private String payload;
 
-    private LocalDateTime created_at;
-
-    private OutboxEventJpaEntity(
-            String id,
-            String aggregateType,
-            String aggregateId,
-            String eventType,
-            String payload,
-            LocalDateTime createdAt
-    ) {
-        this.id = id;
-        this.tracingSpanContext = TraceUtil.serializedTracingProperties();
-        this.aggregate_type = aggregateType;
-        this.aggregateid = aggregateId;
-        this.event_type = eventType;
-        this.payload = payload;
-        this.created_at = createdAt;
-    }
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     public static OutboxEventJpaEntity of(
-            String id,
-            String aggregateType,
-            String aggregateId,
-            String eventType,
-            String payload,
-            LocalDateTime createdAt
+            final String id,
+            final String aggregateType,
+            final String aggregateId,
+            final String eventType,
+            final String payload,
+            final LocalDateTime createdAt,
+            final String tracingSpanContext
     ) {
-        return new OutboxEventJpaEntity(id, aggregateType, aggregateId, eventType, payload, createdAt);
+        OutboxEventJpaEntity entity = new OutboxEventJpaEntity();
+        entity.id = id;
+        entity.aggregateType = aggregateType;
+        entity.aggregateId = aggregateId;
+        entity.eventType = eventType;
+        entity.payload = payload;
+        entity.createdAt = createdAt;
+        entity.tracingSpanContext = tracingSpanContext;
+        return entity;
     }
 }

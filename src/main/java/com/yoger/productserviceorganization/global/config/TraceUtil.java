@@ -2,42 +2,75 @@ package com.yoger.productserviceorganization.global.config;
 
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.propagation.TextMapSetter;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
+import org.apache.kafka.common.header.Header;
+import org.apache.kafka.common.header.Headers;
 
-public class TraceUtil {
+public final class TraceUtil {
 
-    private static final TextMapSetter<Properties> PROPS_SETTER = (carrier, key, value) -> {
-        if (carrier != null && key != null && value != null) {
-            carrier.setProperty(key, value);
+    private TraceUtil() { }
+
+    // Kafka 헤더 → OTEL Context 추출
+    private static final TextMapGetter<Headers> KAFKA_GETTER = new TextMapGetter<>() {
+        @Override
+        public Iterable<String> keys(final Headers carrier) {
+            if (carrier == null) {
+                return List.of();
+            }
+            final List<String> keys = new ArrayList<>();
+            for (Header h : carrier) {
+                keys.add(h.key());
+            }
+            return keys;
+        }
+
+        @Override
+        public String get(final Headers carrier, final String key) {
+            if (carrier == null || key == null) {
+                return null;
+            }
+            final Header header = carrier.lastHeader(key);
+            return header == null ? null : new String(header.value(), StandardCharsets.UTF_8);
         }
     };
 
-    /**
-     * 현재 Context 를 propagator로 뽑아서 Properties 직렬화 문자열로 반환.
-     * 이 문자열을 DB의 tracingspancontext 칼럼에 저장.
-     */
+    /* 레코드의 Kafka 헤더에서 W3C tracecontext를 추출해 Context로 복원 */
+    public static Context extractFromKafkaHeaders(final Headers headers) {
+        return GlobalOpenTelemetry.getPropagators()
+                .getTextMapPropagator()
+                .extract(Context.current(), headers, KAFKA_GETTER);
+    }
+
+    /* 현재 Context를 java.util.Properties 문자열로 직렬화( traceparent 등 포함 ) */
     public static String serializedTracingProperties() {
-        Properties props = new Properties();
+        final Properties props = new Properties();
         GlobalOpenTelemetry.getPropagators()
                 .getTextMapPropagator()
-                .inject(Context.current(), props, PROPS_SETTER);
-
-        // Properties -> String (Properties#store 사용: Debezium 쪽에서는 java.util.Properties.load 로 읽을 수 있음)
-        try (StringWriter w = new StringWriter()) {
-            props.store(w, null);
-            return w.toString();
+                .inject(Context.current(), props, (carrier, key, value) -> {
+                    if (carrier != null && key != null && value != null) {
+                        carrier.setProperty(key, value);
+                    }
+                });
+        try (StringWriter writer = new StringWriter()) {
+            props.store(writer, null);
+            return writer.toString();
         } catch (Exception e) {
-            throw new RuntimeException("failed to serialize tracing properties", e);
+            throw new IllegalStateException("Failed to serialize tracing properties", e);
         }
     }
 
     public static String currentTraceparent() {
-        var sc = Span.current().getSpanContext();
-        if (!sc.isValid()) return null;
-
+        final SpanContext sc = Span.current().getSpanContext();
+        if (!sc.isValid()) {
+            return null;
+        }
         return String.format(
                 "00-%s-%s-%02x",
                 sc.getTraceId(),
