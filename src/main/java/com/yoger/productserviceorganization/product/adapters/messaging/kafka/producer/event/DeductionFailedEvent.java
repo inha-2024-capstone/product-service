@@ -10,7 +10,7 @@ public record DeductionFailedEvent(
         String eventType,
         DeductionFailedEventData data,
         LocalDateTime occurrenceDateTime,
-        String tracingProps
+        String tracingSpanContext
 ) {
     public record DeductionFailedEventData(
             Long orderId,

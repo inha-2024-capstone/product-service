@@ -17,26 +17,26 @@ public class OutboxEventFactory {
 
     public OutboxEvent createDeductionCompletedEvent(
             final DeductStockCommandFromOrder command,
-            final String tracingProps
+            final String tracingSpanContext
     ) {
         final DeductionCompletedEvent event =
                 DeductionCompletedEvent.from(
                         command.getDeductStockCommand().getProductId(),
                         command,
-                        tracingProps
+                        tracingSpanContext
                 );
         return createEvent(event);
     }
 
     public OutboxEvent createDeductionFailedEvent(
             final DeductStockCommandFromOrder command,
-            final String tracingProps
+            final String tracingSpanContext
     ) {
         final DeductionFailedEvent event =
                 DeductionFailedEvent.from(
                         command.getDeductStockCommand().getProductId(),
                         command,
-                        tracingProps
+                        tracingSpanContext
                 );
         return createEvent(event);
     }
@@ -75,7 +75,7 @@ public class OutboxEventFactory {
                 event.eventType(),
                 payload,
                 event.occurrenceDateTime(),
-                event.tracingProps()
+                event.tracingSpanContext()
         );
     }
 
@@ -89,7 +89,7 @@ public class OutboxEventFactory {
                 event.eventType(),
                 payload,
                 event.occurrenceDateTime(),
-                event.tracingProps()
+                event.tracingSpanContext()
         );
     }
 }

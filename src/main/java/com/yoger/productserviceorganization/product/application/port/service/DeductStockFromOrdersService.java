@@ -72,14 +72,14 @@ public class DeductStockFromOrdersService implements DeductStockFromOrdersUseCas
     private OutboxEvent processSingleCommand(
             final Product product,
             final DeductStockCommandFromOrder command,
-            final String tracingProps
+            final String tracingSpanContext
     ) {
         try {
             final int quantity = command.getDeductStockCommand().getQuantity();
             product.deductStockQuantity(quantity);
-            return outboxEventFactory.createDeductionCompletedEvent(command, tracingProps);
+            return outboxEventFactory.createDeductionCompletedEvent(command, tracingSpanContext);
         } catch (final InsufficientStockException ex) {
-            return outboxEventFactory.createDeductionFailedEvent(command, tracingProps);
+            return outboxEventFactory.createDeductionFailedEvent(command, tracingSpanContext);
         }
     }
 }
