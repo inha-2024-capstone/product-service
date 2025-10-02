@@ -15,36 +15,81 @@ public class OutboxEventFactory {
 
     private final ObjectMapper objectMapper;
 
-    public OutboxEvent createDeductionCompletedEvent(DeductStockCommandFromOrder command) {
-        return createEvent(
-                DeductionCompletedEvent.from(command.getDeductStockCommand().getProductId(), command)
-        );
+    public OutboxEvent createDeductionCompletedEvent(
+            final DeductStockCommandFromOrder command,
+            final String tracingSpanContext
+    ) {
+        final DeductionCompletedEvent event =
+                DeductionCompletedEvent.from(
+                        command.getDeductStockCommand().getProductId(),
+                        command,
+                        tracingSpanContext
+                );
+        return createEvent(event);
     }
 
-    public OutboxEvent createDeductionFailedEvent(DeductStockCommandFromOrder command) {
-        return createEvent(
-                DeductionFailedEvent.from(command.getDeductStockCommand().getProductId(), command)
-        );
+    public OutboxEvent createDeductionFailedEvent(
+            final DeductStockCommandFromOrder command,
+            final String tracingSpanContext
+    ) {
+        final DeductionFailedEvent event =
+                DeductionFailedEvent.from(
+                        command.getDeductStockCommand().getProductId(),
+                        command,
+                        tracingSpanContext
+                );
+        return createEvent(event);
     }
 
-    private OutboxEvent createEvent(Object domainEvent) {
+    private OutboxEvent createEvent(final Object domainEvent) {
+        final String payload;
         try {
-            String payload = objectMapper.writeValueAsString(domainEvent);
-
-            if (domainEvent instanceof DeductionCompletedEvent event) {
-                return buildOutbox(event.eventId(), event.productId(), event.eventType(), payload, event.occurrenceDateTime());
-            }
-            if (domainEvent instanceof DeductionFailedEvent event) {
-                return buildOutbox(event.eventId(), event.productId(), event.eventType(), payload, event.occurrenceDateTime());
-            }
-
-            throw new IllegalArgumentException("Unsupported event type: " + domainEvent.getClass().getSimpleName());
+            payload = objectMapper.writeValueAsString(domainEvent);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to serialize event: " + domainEvent.getClass().getSimpleName(), e);
+            throw new IllegalStateException(
+                    "Failed to serialize domain event: " + domainEvent.getClass().getSimpleName(), e
+            );
         }
+
+        if (domainEvent instanceof DeductionCompletedEvent completed) {
+            return toOutbox(completed, payload);
+        }
+        if (domainEvent instanceof DeductionFailedEvent failed) {
+            return toOutbox(failed, payload);
+        }
+
+        throw new IllegalArgumentException(
+                "Unsupported event type: " + domainEvent.getClass().getName()
+        );
     }
 
-    private OutboxEvent buildOutbox(String eventId, Long productId, String eventType, String payload, java.time.LocalDateTime time) {
-        return OutboxEvent.of(eventId, productId.toString(), eventType, payload, time);
+    // --- Mappers -------------------------------------------------------------
+
+    private static OutboxEvent toOutbox(
+            final DeductionCompletedEvent event,
+            final String payload
+    ) {
+        return OutboxEvent.of(
+                event.eventId(),
+                String.valueOf(event.productId()),
+                event.eventType(),
+                payload,
+                event.occurrenceDateTime(),
+                event.tracingSpanContext()
+        );
+    }
+
+    private static OutboxEvent toOutbox(
+            final DeductionFailedEvent event,
+            final String payload
+    ) {
+        return OutboxEvent.of(
+                event.eventId(),
+                String.valueOf(event.productId()),
+                event.eventType(),
+                payload,
+                event.occurrenceDateTime(),
+                event.tracingSpanContext()
+        );
     }
 }

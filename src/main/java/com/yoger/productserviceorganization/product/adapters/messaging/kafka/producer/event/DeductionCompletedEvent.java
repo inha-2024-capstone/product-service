@@ -9,8 +9,8 @@ public record DeductionCompletedEvent(
         Long productId,
         String eventType,
         DeductionCompletedEventData data,
-        LocalDateTime occurrenceDateTime
-
+        LocalDateTime occurrenceDateTime,
+        String tracingSpanContext
 ) {
     public record DeductionCompletedEventData(
             Long orderId,
@@ -21,7 +21,7 @@ public record DeductionCompletedEvent(
         }
     }
 
-    public static DeductionCompletedEvent from(Long productId, DeductStockCommandFromOrder command) {
+    public static DeductionCompletedEvent from(Long productId, DeductStockCommandFromOrder command, String tracingSpanContext) {
         return new DeductionCompletedEvent(
                 UUID.randomUUID().toString(),
                 productId,
@@ -30,7 +30,8 @@ public record DeductionCompletedEvent(
                         command.getOrderId(),
                         command.getDeductStockCommand().getQuantity()
                 ),
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                tracingSpanContext
         );
     }
 }

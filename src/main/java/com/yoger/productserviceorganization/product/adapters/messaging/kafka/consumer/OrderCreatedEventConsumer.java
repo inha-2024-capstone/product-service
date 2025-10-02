@@ -1,16 +1,19 @@
 package com.yoger.productserviceorganization.product.adapters.messaging.kafka.consumer;
 
+import com.yoger.productserviceorganization.global.config.TraceUtil;
 import com.yoger.productserviceorganization.product.adapters.messaging.kafka.consumer.event.OrderCreatedEvent;
 import com.yoger.productserviceorganization.product.application.port.in.DeductStockFromOrdersUseCase;
 import com.yoger.productserviceorganization.product.application.port.in.command.DeductStockBatchCommandFromOrder;
 import com.yoger.productserviceorganization.product.application.port.in.command.DeductStockCommandFromOrder;
 import com.yoger.productserviceorganization.product.mapper.EventMapper;
+import io.opentelemetry.context.Scope;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
@@ -18,45 +21,97 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 class OrderCreatedEventConsumer {
+
     private final EventDeduplicateService eventDeduplicateService;
     private final DeductStockFromOrdersUseCase deductStockFromOrdersUseCase;
+
+    // 중복키 저장 및 트레이싱 전달을 위한 래퍼
+    public record CommandWithTracing(
+            String eventId,
+            DeductStockCommandFromOrder command,
+            String tracingSpanContext
+    ) {}
 
     @KafkaListener(
             topics = "${event.topic.order.created}",
             containerFactory = "kafkaOrderCreatedEventListenerContainerFactory"
     )
-    public void consumeOrderCreatedEventBatch(List<OrderCreatedEvent> events, Acknowledgment ack) {
-        try {
-            List<OrderCreatedEvent> filteredEvents = filterDeduplicatedEvents(events);
+    public void consumeOrderCreatedEventBatch(
+            final List<ConsumerRecord<String, OrderCreatedEvent>> records,
+            final Acknowledgment ack
+    ) {
+        if (records == null || records.isEmpty()) {
+            ack.acknowledge();
+            return;
+        }
 
-            Map<Long, List<DeductStockCommandFromOrder>> groupedCommands =
-                    toGroupedDeductCommands(filteredEvents);
+        final List<CommandWithTracing> prepared = prepareCommands(records);
+        if (prepared.isEmpty()) {
+            ack.acknowledge();
+            return;
+        }
 
-            for (Map.Entry<Long, List<DeductStockCommandFromOrder>> entry : groupedCommands.entrySet()) {
-                DeductStockBatchCommandFromOrder commandBatch =
-                        new DeductStockBatchCommandFromOrder(entry.getKey(), entry.getValue());
-                deductStockFromOrdersUseCase.deductStockFromOrders(commandBatch);
+        final Map<Long, List<CommandWithTracing>> grouped = groupByProductId(prepared);
+        processGroupedBatches(grouped);
+
+        // 성공 처리 후 전역 중복키 저장
+        prepared.forEach(ct -> eventDeduplicateService.putKey(ct.eventId()));
+
+        ack.acknowledge();
+    }
+
+    private List<CommandWithTracing> prepareCommands(
+            final List<ConsumerRecord<String, OrderCreatedEvent>> records
+    ) {
+        final HashSet<String> seenInBatch = new HashSet<>();
+        final List<CommandWithTracing> result = new ArrayList<>();
+
+        for (final ConsumerRecord<String, OrderCreatedEvent> record : records) {
+            final OrderCreatedEvent event = record.value();
+            if (event == null) {
+                continue;
+            }
+            if (!seenInBatch.add(event.eventId())) {         // 배치 내 중복 제거
+                continue;
+            }
+            if (eventDeduplicateService.isDuplicate(event.eventId())) { // 전역 중복 제거
+                continue;
             }
 
-            filteredEvents.forEach(e -> eventDeduplicateService.putKey(e.eventId()));
-            ack.acknowledge();
-
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to process order events", e);
+            // 레코드별 스코프: 이 블록 내의 current()를 직렬화하여 per-record 트레이싱 보존
+            try (final Scope scope =
+                         TraceUtil.extractFromKafkaHeaders(record.headers()).makeCurrent()) {
+                final DeductStockCommandFromOrder cmd = EventMapper.toCommand(event);
+                final String tracingProps = TraceUtil.serializedTracingProperties();
+                result.add(new CommandWithTracing(event.eventId(), cmd, tracingProps));
+            }
         }
+        return result;
     }
 
-    private List<OrderCreatedEvent> filterDeduplicatedEvents(List<OrderCreatedEvent> events) {
-        Set<String> seen = new HashSet<>();
-        return events.stream()
-                .filter(e -> seen.add(e.eventId())) // 중복된 이벤트 ID 제거 (같은 배치 내에서)
-                .filter(e -> !eventDeduplicateService.isDuplicate(e.eventId())) // Redis 등으로 전체 중복 제거
-                .toList();
+    private Map<Long, List<CommandWithTracing>> groupByProductId(
+            final List<CommandWithTracing> prepared
+    ) {
+        return prepared.stream()
+                .collect(Collectors.groupingBy(
+                        ct -> ct.command().getDeductStockCommand().getProductId()
+                ));
     }
 
-    private Map<Long, List<DeductStockCommandFromOrder>> toGroupedDeductCommands(List<OrderCreatedEvent> events) {
-        return events.stream()
-                .map(EventMapper::toCommand)
-                .collect(Collectors.groupingBy(cmd -> cmd.getDeductStockCommand().getProductId()));
+    private void processGroupedBatches(final Map<Long, List<CommandWithTracing>> grouped) {
+        for (final Map.Entry<Long, List<CommandWithTracing>> entry : grouped.entrySet()) {
+            final Long productId = entry.getKey();
+            final List<DeductStockCommandFromOrder> commands = entry.getValue().stream()
+                    .map(CommandWithTracing::command)
+                    .toList();
+            final List<String> tracingContexts = entry.getValue().stream()
+                    .map(CommandWithTracing::tracingSpanContext)
+                    .toList();
+
+            deductStockFromOrdersUseCase.deductStockFromOrders(
+                    new DeductStockBatchCommandFromOrder(productId, commands),
+                    tracingContexts
+            );
+        }
     }
 }
