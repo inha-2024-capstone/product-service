@@ -6,7 +6,7 @@ final class OutboxEventMapper {
     private OutboxEventMapper() {}
 
     static OutboxEventJpaEntity toEntity(OutboxEvent domain) {
-        return new OutboxEventJpaEntity(
+        return OutboxEventJpaEntity.of(
                 domain.id(),
                 domain.aggregateType(),
                 domain.aggregateId(),
