@@ -8,7 +8,7 @@ import java.util.UUID;
 public record OrderDeductionFailedEvent(
         String eventId,
         String orderId,
-        String eventType,
+        EventType eventType,
         Data data,
         LocalDateTime occurrenceDateTime,
         String tracingSpanContext
@@ -20,7 +20,7 @@ public record OrderDeductionFailedEvent(
         return new OrderDeductionFailedEvent(
                 UUID.randomUUID().toString(),
                 cmd.getOrderId(),
-                "deductionFailed",
+                EventType.DEDUCTION_FAILED,
                 Data.from(cmd),
                 cmd.getOccurrenceDateTime(),
                 tracingSpanContext

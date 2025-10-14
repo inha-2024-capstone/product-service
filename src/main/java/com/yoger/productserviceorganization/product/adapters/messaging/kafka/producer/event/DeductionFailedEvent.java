@@ -7,7 +7,7 @@ import java.util.UUID;
 public record DeductionFailedEvent(
         String eventId,
         Long productId,
-        String eventType,
+        EventType eventType,
         DeductionFailedEventData data,
         LocalDateTime occurrenceDateTime,
         String tracingSpanContext
@@ -25,7 +25,7 @@ public record DeductionFailedEvent(
         return new DeductionFailedEvent(
                 UUID.randomUUID().toString(),
                 productId,
-                "deductionFailed",
+                EventType.DEDUCTION_FAILED,
                 DeductionFailedEventData.of(
                         command.getOrderId(),
                         command.getDeductStockCommand().getQuantity()
