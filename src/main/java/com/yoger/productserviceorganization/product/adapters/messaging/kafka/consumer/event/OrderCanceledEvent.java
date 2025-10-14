@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public record OrderCanceledEvent(
         String eventId,
-        Long orderId,
+        String orderId,
         String eventType,
         OrderCanceledData data,
         LocalDateTime occurrenceDateTime

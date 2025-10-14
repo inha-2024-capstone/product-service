@@ -13,10 +13,10 @@ public record DeductionFailedEvent(
         String tracingSpanContext
 ) {
     public record DeductionFailedEventData(
-            Long orderId,
+            String orderId,
             Integer orderQuantity
     ) {
-        private static DeductionFailedEventData of(Long orderId, Integer orderQuantity) {
+        private static DeductionFailedEventData of(String orderId, Integer orderQuantity) {
             return new DeductionFailedEventData(orderId, orderQuantity);
         }
     }
