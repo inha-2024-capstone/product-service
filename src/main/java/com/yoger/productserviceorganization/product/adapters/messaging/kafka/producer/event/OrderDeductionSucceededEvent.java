@@ -14,8 +14,8 @@ public record OrderDeductionSucceededEvent(
         String tracingSpanContext
 ) {
     public static OrderDeductionSucceededEvent from(
-            DeductStockFromOrderCommand cmd,
-            String tracingSpanContext
+            final DeductStockFromOrderCommand cmd,
+            final String tracingSpanContext
     ) {
         return new OrderDeductionSucceededEvent(
                 UUID.randomUUID().toString(),

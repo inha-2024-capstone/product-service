@@ -21,7 +21,11 @@ public record DeductionFailedEvent(
         }
     }
 
-    public static DeductionFailedEvent from(Long productId, DeductStockCommandFromOrder command, String tracingProps) {
+    public static DeductionFailedEvent from(
+            final Long productId,
+            final DeductStockCommandFromOrder command,
+            final String tracingProps
+    ) {
         return new DeductionFailedEvent(
                 UUID.randomUUID().toString(),
                 productId,

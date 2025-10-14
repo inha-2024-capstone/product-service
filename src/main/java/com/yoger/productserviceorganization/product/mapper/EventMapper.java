@@ -13,8 +13,8 @@ import java.util.List;
 public final class EventMapper {
     private EventMapper() {}
 
-    public static DeductStockCommandFromOrder toCommand(OrderCreatedEvent event) {
-        DeductStockCommand deductCommand = new DeductStockCommand(
+    public static DeductStockCommandFromOrder toCommand(final OrderCreatedEvent event) {
+        final DeductStockCommand deductCommand = new DeductStockCommand(
                 event.data().productId(),
                 event.data().orderQuantity(),
                 event.occurrenceDateTime()
@@ -22,7 +22,7 @@ public final class EventMapper {
         return new DeductStockCommandFromOrder(event.orderId(), deductCommand);
     }
 
-    public static IncreaseStockCommand toCommand(OrderCanceledEvent event){
+    public static IncreaseStockCommand toCommand(final OrderCanceledEvent event){
         return new IncreaseStockCommand(
                 event.data().productId(),
                 event.data().orderQuantity(),
@@ -31,9 +31,9 @@ public final class EventMapper {
     }
 
     public static DeductStockFromOrderCommand toDeductStockFromOrderCommand(
-            DeductStockFromOrderEvent event
+            final DeductStockFromOrderEvent event
     ) {
-        List<OrderItem> items = event.data().orderItems()
+        final List<OrderItem> items = event.data().orderItems()
                 .stream()
                 .map(orderItemData -> new DeductStockFromOrderCommand.OrderItem(
                         orderItemData.productId(),

@@ -32,11 +32,11 @@ public class DeductStockFromOrderCommand extends SelfValidating<DeductStockFromO
     LocalDateTime occurrenceDateTime;
 
     public DeductStockFromOrderCommand(
-            String orderId,
-            String eventId,
-            Long userId,
-            List<OrderItem> items,
-            LocalDateTime occurrenceDateTime
+            final String orderId,
+            final String eventId,
+            final Long userId,
+            final List<OrderItem> items,
+            final LocalDateTime occurrenceDateTime
     ) {
         this.orderId = orderId;
         this.eventId = eventId;
@@ -56,7 +56,7 @@ public class DeductStockFromOrderCommand extends SelfValidating<DeductStockFromO
         @Min(value = 1, message = "수량은 1 이상이어야 합니다.")
         Integer quantity;
 
-        public OrderItem(Long productId, Integer quantity) {
+        public OrderItem(final Long productId, final Integer quantity) {
             this.productId = productId;
             this.quantity = quantity;
             this.validateSelf();
