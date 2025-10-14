@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public record OrderCreatedEvent(
         String eventId,
-        Long orderId,
+        String orderId,
         String eventType,
         OrderCreatedData data,
         LocalDateTime occurrenceDateTime

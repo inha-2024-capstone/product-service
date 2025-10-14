@@ -7,16 +7,16 @@ import java.util.UUID;
 public record DeductionFailedEvent(
         String eventId,
         Long productId,
-        String eventType,
+        EventType eventType,
         DeductionFailedEventData data,
         LocalDateTime occurrenceDateTime,
         String tracingSpanContext
 ) {
     public record DeductionFailedEventData(
-            Long orderId,
+            String orderId,
             Integer orderQuantity
     ) {
-        private static DeductionFailedEventData of(Long orderId, Integer orderQuantity) {
+        private static DeductionFailedEventData of(String orderId, Integer orderQuantity) {
             return new DeductionFailedEventData(orderId, orderQuantity);
         }
     }
@@ -25,7 +25,7 @@ public record DeductionFailedEvent(
         return new DeductionFailedEvent(
                 UUID.randomUUID().toString(),
                 productId,
-                "deductionFailed",
+                EventType.DEDUCTION_FAILED,
                 DeductionFailedEventData.of(
                         command.getOrderId(),
                         command.getDeductStockCommand().getQuantity()
