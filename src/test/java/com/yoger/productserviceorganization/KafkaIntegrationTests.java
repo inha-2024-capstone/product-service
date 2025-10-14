@@ -43,7 +43,7 @@ import org.testcontainers.utility.DockerImageName;
 public class KafkaIntegrationTests {
     private static final String ORDER_CREATED_TYPE = "OrderCreated";
 
-    @Value("${event.topic.order.created}")
+    @Value("${event.topic.order.created.v2}")
     private String orderCreatedEventTopic;
 
     @Container
@@ -117,7 +117,7 @@ public class KafkaIntegrationTests {
     void testOrderCreatedEventConsumer() throws Exception {
         OrderCreatedEvent event = new OrderCreatedEvent(
                 UUID.randomUUID().toString(),
-                999L,
+                "test",
                 ORDER_CREATED_TYPE,
                 new OrderCreatedEvent.OrderCreatedData(100L, 1L, 1),
                 LocalDateTime.now()
@@ -140,7 +140,7 @@ public class KafkaIntegrationTests {
     void testDuplicateOrderCreatedEventConsume() throws Exception {
         OrderCreatedEvent event = new OrderCreatedEvent(
                 UUID.randomUUID().toString(),
-                999L,
+                "test",
                 ORDER_CREATED_TYPE,
                 new OrderCreatedEvent.OrderCreatedData(100L, 1L, 1),
                 LocalDateTime.now()
@@ -175,7 +175,7 @@ public class KafkaIntegrationTests {
     void testEventStoredInOutboxOnSuccess() throws Exception {
         OrderCreatedEvent event = new OrderCreatedEvent(
                 UUID.randomUUID().toString(),
-                999L,
+                "test",
                 ORDER_CREATED_TYPE,
                 new OrderCreatedEvent.OrderCreatedData(100L, 1L, 1),
                 LocalDateTime.now()
@@ -200,7 +200,7 @@ public class KafkaIntegrationTests {
                 Integer count = jdbcTemplate.queryForObject("""
                         SELECT COUNT(*) FROM outbox
                         WHERE event_type = 'deductionCompleted'
-                          AND payload LIKE '%"orderId":999%'
+                          AND payload LIKE '%"orderId":"test"%'
                     """, Integer.class
                 );
                 assertThat(count).isEqualTo(1);
@@ -212,7 +212,7 @@ public class KafkaIntegrationTests {
     void testEventStoredInOutboxOnFail() throws Exception {
         OrderCreatedEvent event = new OrderCreatedEvent(
                 UUID.randomUUID().toString(),
-                999L,
+                "test",
                 ORDER_CREATED_TYPE,
                 new OrderCreatedEvent.OrderCreatedData(100L, 1L, 500), // 재고 수량보다 많은 주문
                 LocalDateTime.now()
@@ -237,7 +237,7 @@ public class KafkaIntegrationTests {
                 Integer count = jdbcTemplate.queryForObject("""
                         SELECT COUNT(*) FROM outbox
                         WHERE event_type = 'deductionFailed'
-                          AND payload LIKE '%"orderId":999%'
+                          AND payload LIKE '%"orderId":"test"%'
                     """, Integer.class
                 );
                 assertThat(count).isEqualTo(1);
