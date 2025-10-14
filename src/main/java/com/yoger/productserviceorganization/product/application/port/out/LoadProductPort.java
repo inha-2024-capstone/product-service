@@ -9,4 +9,6 @@ public interface LoadProductPort {
     Product loadProduct(Long productId);
 
     Product loadProductWithLock(Long productId);
+
+    List<Product> loadProductsWithLock(List<Long> idsSorted);
 }

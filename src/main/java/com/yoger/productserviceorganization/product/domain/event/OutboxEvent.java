@@ -21,4 +21,16 @@ public record OutboxEvent(
     ) {
         return new OutboxEvent(id, "product", aggregateId, eventType, payload, createdAt, tracingSpanContext);
     }
+
+    // 주문 단위 이벤트용 헬퍼
+    public static OutboxEvent ofOrder(
+            String id,
+            String aggregateId,
+            String eventType,
+            String payload,
+            LocalDateTime createdAt,
+            String tracingSpanContext
+    ) {
+        return new OutboxEvent(id, "order", aggregateId, eventType, payload, createdAt, tracingSpanContext);
+    }
 }

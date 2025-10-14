@@ -21,7 +21,11 @@ public record DeductionCompletedEvent(
         }
     }
 
-    public static DeductionCompletedEvent from(Long productId, DeductStockCommandFromOrder command, String tracingSpanContext) {
+    public static DeductionCompletedEvent from(
+            final Long productId,
+            final DeductStockCommandFromOrder command,
+            final String tracingSpanContext
+    ) {
         return new DeductionCompletedEvent(
                 UUID.randomUUID().toString(),
                 productId,

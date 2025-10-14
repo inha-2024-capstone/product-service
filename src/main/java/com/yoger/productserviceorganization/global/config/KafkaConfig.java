@@ -1,5 +1,6 @@
 package com.yoger.productserviceorganization.global.config;
 
+import com.yoger.productserviceorganization.product.adapters.messaging.kafka.consumer.event.DeductStockFromOrderEvent;
 import com.yoger.productserviceorganization.product.adapters.messaging.kafka.consumer.event.OrderCreatedEvent;
 import java.util.HashMap;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -55,6 +56,27 @@ public class KafkaConfig {
         factory.setConsumerFactory(consumerFactory);
         factory.setBatchListener(true); // 배치 모드
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
+
+        return factory;
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, DeductStockFromOrderEvent>
+    kafkaDeductStockFromOrderEventListenerContainerFactory() {
+
+        ConcurrentKafkaListenerContainerFactory<String, DeductStockFromOrderEvent> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+
+        DefaultKafkaConsumerFactory<String, DeductStockFromOrderEvent> consumerFactory =
+                new DefaultKafkaConsumerFactory<>(
+                        consumerConfig(),
+                        new StringDeserializer(),
+                        new JsonDeserializer<>(DeductStockFromOrderEvent.class, false) // 헤더 타입정보 미사용
+                );
+
+        factory.setConsumerFactory(consumerFactory);
+        factory.setBatchListener(false); // 단건 처리
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE); // 수동 즉시 커밋
 
         return factory;
     }

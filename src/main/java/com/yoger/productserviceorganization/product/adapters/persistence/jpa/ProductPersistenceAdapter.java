@@ -5,6 +5,9 @@ import com.yoger.productserviceorganization.product.application.port.out.Persist
 import com.yoger.productserviceorganization.product.domain.exception.ProductNotFoundException;
 import com.yoger.productserviceorganization.product.domain.model.Product;
 import com.yoger.productserviceorganization.product.domain.model.ProductState;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.PersistenceContext;
 import java.time.Duration;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +21,11 @@ class ProductPersistenceAdapter implements LoadProductPort, PersistProductPort {
     private static final String PRODUCT_LIST_CACHE_BY_STATE = "productsByState:";
 
     private final JpaProductRepository jpaProductRepository;
+
     private final RedisTemplate<String, Object> redisTemplate;
+
+    @PersistenceContext
+    private final EntityManager entityManager;
 
     private void evictCacheForState(ProductState state) {
         String cacheKey = PRODUCT_LIST_CACHE_BY_STATE + state.name();
@@ -84,5 +91,24 @@ class ProductPersistenceAdapter implements LoadProductPort, PersistProductPort {
 
         redisTemplate.opsForValue().set(cacheKey, product, Duration.ofMinutes(5));
         return product;
+    }
+
+    @Override
+    public List<Product> loadProductsWithLock(List<Long> idsSorted) {
+        if (idsSorted == null || idsSorted.isEmpty()) {
+            return List.of();
+        }
+        // ORDER BY로 잠금 순서를 고정
+        List<ProductJpaEntity> entities = entityManager.createQuery(
+                        "SELECT p FROM ProductJpaEntity p WHERE p.id IN :ids ORDER BY p.id ASC",
+                        ProductJpaEntity.class
+                )
+                .setParameter("ids", idsSorted)
+                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+                .getResultList();
+
+        return entities.stream()
+                .map(ProductMapper::toDomainFrom)
+                .toList();
     }
 }

@@ -14,8 +14,8 @@ public record OrderDeductionFailedEvent(
         String tracingSpanContext
 ) {
     public static OrderDeductionFailedEvent from(
-            DeductStockFromOrderCommand cmd,
-            String tracingSpanContext
+            final DeductStockFromOrderCommand cmd,
+            final String tracingSpanContext
     ) {
         return new OrderDeductionFailedEvent(
                 UUID.randomUUID().toString(),

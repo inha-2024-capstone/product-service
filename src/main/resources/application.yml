@@ -75,8 +75,11 @@ event:
   topic:
     order:
       created: yoger.order.prd.created
+      'created.v2': yoger.order.prd.created.v2
       canceled: yoger.order.prd.canceled
-      completed: yoger.order.prd.completed
+  listener:
+    'order-created':
+      enabled: false
 
 cloud:
   aws:
