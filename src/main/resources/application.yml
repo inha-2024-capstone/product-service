@@ -65,9 +65,8 @@ spring:
         isolation-level: read_committed
         # 배치 크기
         max-poll-records: 500
-        # 브로커 응답 지연(최대 50ms)
-        fetch-max-wait-ms: 50
-        # 브로커가 적어도 이만큼 데이터가 쌓이면 보내도록
+        fetch-max-wait-ms: 500
+        # 브로커가 적어도 이만큼 데이터가 쌓이면 보내도록 -> 실시간성 최대
         # 1이면 "1바이트 이상" 즉, 거의 즉시
         fetch-min-bytes: 1
 
